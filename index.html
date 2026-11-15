@@ -123,6 +123,8 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
 .bgbtn { width: 2.4rem; height: 2.4rem; flex: none; font-size: 1.1rem; padding: 0; }
 .bgmenu { display: grid; grid-template-columns: 1fr 1fr; gap: 0.33rem; height: 2.6rem; flex: none; }
 .bgmenu button { font-size: 0.85rem; font-weight: 700; }
+
+.nd { color: var(--wood); font-weight: 700; } .nsep { color: var(--dim); } .ns { color: var(--blue); }
 </style>
 </head>
 <body>
@@ -354,6 +356,14 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
     if (cur.trim()) pages.push(cur);
     return pages.length ? pages.map(function (p) { return p.replace(/^\n+|\n+$/g, ""); }) : [""];
   }
+  /* "Lumber walk 11/15 · Aisle 17: J-hooks are full." -> date orange, area + standard blue, the rest white */
+  var LW_LINE = /^(Lumber walk \d+\/\d+)( · )([^:\n]+?)(: )?(.*)$/;
+  function lineHtml(line) {
+    var m = String(line).match(LW_LINE);
+    if (!m) return esc(line);
+    return '<span class="nd">' + esc(m[1]) + '</span><span class="nsep">' + esc(m[2]) + '</span><span class="ns">' + esc(m[3]) + esc(m[4] || "") + esc(m[5] || "") + '</span>';
+  }
+  function noteHtml(text) { return String(text || "").split("\n").map(lineHtml).join("\n"); }
   function fmtDay(ts) { var d = new Date(ts || Date.now()); return (d.getMonth() + 1) + "/" + d.getDate(); }
 
   /* ---------- views ---------- */
@@ -417,7 +427,7 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
   function notesView() {
     var list = workNotes();
     var rows = list.map(function (n) {
-      return '<button class="focusable item note" data-k="o:' + n.id + '"><div class="t"><small>' + fmtDay(n.created) + '</small><span>' + esc(n.text) + '</span></div></button>';
+      return '<button class="focusable item note" data-k="o:' + n.id + '"><div class="t"><small>' + fmtDay(n.created) + '</small><span style="white-space:pre-wrap">' + noteHtml(n.text) + '</span></div></button>';
     }).join("");
     var body = HUB.status === "none"
       ? '<div class="empty">Not linked to Home Hub yet.<br><span style="font-size:.92rem">Open Lumber Walk once with your Home Hub sync link.</span></div>'
@@ -436,7 +446,7 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
     return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button>' +
       '<div class="ttl"><small>Work note · ' + fmtDay(n.created) + '</small><b>' + (pages.length > 1 ? 'Page ' + (S.chunk + 1) + ' of ' + pages.length : 'Note') + '</b></div>' +
       '<span id="sync" class="sync ' + HUB.status + '">' + syncLabel() + '</span></div>' +
-      '<p class="ntext">' + esc(pages[S.chunk]) + '</p>' +
+      '<p class="ntext">' + noteHtml(pages[S.chunk]) + '</p>' +
       '<div class="row4"><button class="focusable b" data-k="cp"' + (S.chunk === 0 ? " disabled" : "") + '>‹ Prev</button>' +
       '<button class="focusable b" data-k="cn"' + (S.chunk >= pages.length - 1 ? " disabled" : "") + '>Next ›</button>' +
       '<button class="focusable b done-b' + (S.confirm ? " sure" : "") + '" data-k="ndone">' + (S.confirm ? "Sure?" : "✔ Done") + '</button>' +
