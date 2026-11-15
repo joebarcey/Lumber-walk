@@ -36,6 +36,14 @@ input::placeholder { color: var(--dim); }
 .ttl { flex: 1; min-width: 0; display: grid; gap: 0.125rem; }
 .ttl small { font-size: 0.708333rem; font-weight: 800; letter-spacing: .14em; color: var(--wood); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ttl b { font-size: 1.125rem; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.final { display: flex; align-items: center; gap: 0.4rem; flex: none; }
+.fp { display: grid; justify-items: end; line-height: 1; }
+.fp b { font-size: 1.5rem; font-weight: 800; color: var(--green); font-variant-numeric: tabular-nums; }
+.fp span { font-size: 0.62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+.fp.walking b { color: var(--blue); }
+.grade { width: 2.5rem; height: 2.5rem; border-radius: 0.6rem; border: 0.15rem solid currentColor; display: grid; place-items: center; font-size: 1.7rem; font-weight: 900; }
+.gA, .gB { color: var(--green); } .gC { color: var(--amber); } .gD, .gF { color: #ff6b6b; }
+.fp.gA b, .fp.gB b { color: var(--green); } .fp.gC b { color: var(--amber); } .fp.gD b, .fp.gF b { color: #ff6b6b; }
 .pct { font-size: 1.66667rem; font-weight: 800; color: var(--blue); font-variant-numeric: tabular-nums; }
 .pct.all { color: var(--green); }
 .sync { font-size: 0.75rem; font-weight: 700; color: var(--dim); white-space: nowrap; }
@@ -51,16 +59,18 @@ input::placeholder { color: var(--dim); }
 
 /* home: tiles stretch to fill the screen */
 .grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 0.333333rem; }
-.tile { min-width: 0; overflow: hidden; display: grid; grid-template-rows: 1fr auto auto; align-items: center; justify-items: start; gap: 0.166667rem; padding: 0.333333rem 0.5rem 0.416667rem; text-align: left; min-height: 0; }
-.tile .lb { white-space: nowrap; }
-.tile .zp { font-size: 1.05rem; font-weight: 800; color: var(--blue); font-variant-numeric: tabular-nums; line-height: 1; }
-.tile .zp.zero { color: var(--dim); opacity: .7; }
-.tile.done .zp { color: var(--green); } .tile.flag .zp { color: var(--amber); }
-.tile .n { font-size: 0.875rem; font-weight: 700; line-height: 1.05; }
-.tile .c { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.3rem; max-width: 100%; font-size: 0.708333rem; font-weight: 700; color: var(--dim); font-variant-numeric: tabular-nums; }
+.tile { min-width: 0; overflow: hidden; display: grid; grid-template-rows: 1fr auto auto auto; align-items: center; justify-items: start; gap: 0.1rem; padding: 0.333333rem 0.5rem 0.416667rem; text-align: left; min-height: 0; }
+.tile .n { font-size: 0.85rem; font-weight: 700; line-height: 1.05; }
+.tile .wk { font-size: 0.66rem; font-weight: 700; color: var(--dim); white-space: nowrap; }
+.tile .wk b { font-size: 0.95rem; color: var(--blue); font-variant-numeric: tabular-nums; margin-right: 0.1rem; }
+.tile .wk.zero b { color: var(--dim); }
+.tile .mn { display: flex; flex-wrap: wrap; column-gap: 0.45rem; font-size: 0.66rem; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tile .mn .g { color: var(--green); } .tile .mn .a { color: var(--amber); }
+.tile .mn .zero { opacity: .55; }
+.tile.gt { border-color: currentColor; }
+.tile.gt .n, .tile.gt .wk, .tile.gt .wk b { color: inherit; }
+.tile .wk.gr i { font-style: normal; font-size: 0.95rem; font-weight: 900; }
 .tile .meter { width: 100%; height: 0.291667rem; }
-.tile.done { border-color: var(--green); } .tile.done .n, .tile.done .c { color: var(--green); }
-.tile.flag { border-color: var(--amber); } .tile.flag .c { color: var(--amber); }
 .row3 { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 0.333333rem; height: 3.16667rem; flex: none; }
 .row3 button { font-size: 1.04167rem; }
 .go { border-color: var(--green); color: var(--green); }
@@ -129,6 +139,55 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
 .bgmenu button { font-size: 0.85rem; font-weight: 700; }
 
 .nd { color: var(--wood); font-weight: 700; } .nsep { color: var(--dim); } .ns { color: var(--blue); }
+
+/* start page */
+.hgrid { flex: 1; min-height: 0; display: grid; grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 0.4rem; }
+.htab { display: flex; align-items: center; gap: 0.6rem; text-align: left; padding: 0.4rem 0.75rem; min-height: 0; }
+.htab .hi { font-size: 1.9rem; flex: none; width: 2.4rem; text-align: center; }
+.htab .hm { flex: 1; min-width: 0; display: grid; gap: 0.2rem; }
+.htab .ht { font-size: 1.25rem; font-weight: 800; }
+.htab .hl { font-size: 0.8rem; font-weight: 700; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.htab .hl b { color: var(--blue); }
+.htab .hc { font-size: 1.6rem; color: var(--dim); flex: none; }
+.htab.gt { border-color: currentColor; } .htab.gt .ht, .htab.gt .hl b { color: inherit; }
+.htab.alldone { border-color: var(--green); } .htab.alldone .hl b, .htab.alldone .ht { color: var(--green); }
+/* task lists */
+.trow { display: flex; align-items: stretch; gap: 0.33rem; flex: none; }
+.tchk { width: 3.1rem; min-height: 3.1rem; flex: none; padding: 0; font-size: 1.4rem; font-weight: 900; border-color: var(--green); color: #000; }
+.tchk.on { background: var(--green); }
+body.has-bg .tchk.on { background: var(--green); }
+.ttxt { flex: 1; min-width: 0; text-align: left; padding: 0.35rem 0.6rem; display: grid; gap: 0.15rem; }
+.ttxt b { font-size: 1rem; }
+.ttxt small { font-size: 0.72rem; font-weight: 600; color: var(--dim); line-height: 1.2; }
+.trow.on .ttxt b { color: var(--green); }
+.tbtn { width: 2.9rem; flex: none; padding: 0; font-size: 1.05rem; }
+.mailbtn { display: grid; place-items: center; text-decoration: none; color: var(--green); }
+
+/* history */
+.htab.nobar .meter { display: none; }
+.seg2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.33rem; height: 2.4rem; flex: none; }
+.seg2 button { font-size: 0.95rem; }
+.seg2 button.on { border-color: var(--fg); background: #1c2433; }
+.hrow { min-height: 3.3rem; }
+.hs { display: flex; flex-wrap: wrap; gap: 0 0.35rem; font-size: 0.85rem !important; font-weight: 700; -webkit-line-clamp: unset !important; }
+.hs > span { display: inline !important; font-size: inherit !important; -webkit-line-clamp: unset; }
+.hs { display: flex !important; }
+.dot2 { color: var(--dim); }
+.dimtxt { color: var(--dim) !important; }
+.hsec { font-size: 0.72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--wood); margin-top: 0.35rem; flex: none; }
+.hbig { font-size: 1.4rem; font-weight: 800; display: grid; gap: 0.15rem; flex: none; padding: 0.2rem 0.3rem; border-radius: 0.5rem; }
+.hbig small { font-size: 0.75rem; color: var(--dim); font-weight: 700; }
+.hline { font-size: 0.9rem; line-height: 1.25; padding: 0.3rem 0.45rem; border-radius: 0.5rem; flex: none; }
+.hline.g { color: var(--green); } .hline.a { color: var(--amber); }
+.hline:focus, .hbig:focus, .hsec:focus { outline: 0.2rem solid var(--fg); }
+
+/* observation template */
+.flab { font-size: 0.72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--wood); margin: 0.2rem 0 -0.15rem 0.2rem; flex: none; }
+.say.obsf { height: 3.1rem; font-size: 1.05rem; }
+.mailprev { flex: 1; min-height: 0; overflow: hidden; border: 0.12rem solid var(--line2); border-radius: 0.6rem; padding: 0.45rem 0.6rem; font-size: 0.85rem; line-height: 1.3; }
+.mailprev .mto { color: var(--dim); font-weight: 700; margin-bottom: 0.15rem; }
+.mailprev .msub { font-weight: 800; color: var(--blue); margin-bottom: 0.3rem; }
+.mailprev .mbody { white-space: pre-wrap; }
 </style>
 </head>
 <body>
@@ -247,7 +306,7 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
   function pad(n) { return String(n).padStart(2, "0"); }
   var now = new Date();
   var S = {
-    view: "home",
+    view: "hub", list: "daily", edit: null, notesBack: "hub",
     date: now.getFullYear() + "-" + pad(now.getMonth() + 1) + "-" + pad(now.getDate()),
     label: DAYS[now.getDay()] + " " + (now.getMonth() + 1) + "/" + now.getDate(),
     zone: 0, idx: 0, origin: "home", page: 0, confirm: false, focus: null, st: {},
@@ -258,9 +317,123 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
   function load() {
     S.st = {};
     try { var v = localStorage.getItem(key()); if (v) S.st = JSON.parse(v) || {}; } catch (e) {}
+    loadTS();
   }
   function save() { try { localStorage.setItem(key(), JSON.stringify(S.st)); } catch (e) {} }
   function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+
+  /* ---------- Daily & Weekly tasks ---------- */
+  var DEFAULT_TASKS = {
+    daily: [
+      { id: "d-walk", kind: "walk", title: "Department Walk", desc: "Complete the Pro & Lumber standards walk" },
+      { id: "d-comp", kind: "task", title: "Computer Work", desc: "Review and complete daily system tasks" },
+      { id: "d-email", kind: "task", title: "Daily Email", desc: "Review and respond to department email" },
+      { id: "d-obs", kind: "obs", title: "Observations", desc: "Log each observation; it is saved as a note to email" }
+    ],
+    weekly: [
+      { id: "w-dq", kind: "task", title: "Daily Questions", desc: "Complete at least once this week" },
+      { id: "w-ap4me", kind: "task", title: "AP4Me", desc: "Complete this week's AP4Me" },
+      { id: "w-lu", kind: "task", title: "Lowe's U", desc: "Complete assigned training" },
+      { id: "w-200", kind: "task", title: "200 Report", desc: "Review and work the 200 Report" },
+      { id: "w-counts", kind: "task", title: "Counts", desc: "Complete assigned cycle counts" },
+      { id: "w-audits", kind: "task", title: "Audits", desc: "Complete assigned audits" },
+      { id: "w-meet", kind: "meet", title: "Monday Meeting", desc: "Attend and record meeting notes" }
+    ]
+  };
+  var TASKS = null;
+  try { TASKS = JSON.parse(localStorage.getItem("plw-tasks") || "null"); } catch (e) {}
+  if (!TASKS || !TASKS.daily || !TASKS.weekly) TASKS = JSON.parse(JSON.stringify(DEFAULT_TASKS));
+  function saveTasks() { try { localStorage.setItem("plw-tasks", JSON.stringify(TASKS)); } catch (e) {} }
+  /* weeks run Monday to Sunday */
+  var WEEK = (function () { var d = new Date(now.getFullYear(), now.getMonth(), now.getDate()); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); })();
+  var WLABEL = "Week of " + (+WEEK.split("-")[1]) + "/" + (+WEEK.split("-")[2]);
+  var TS = { daily: {}, weekly: {} };
+  function tkey(l) { return l === "daily" ? "plw-d:" + S.date : "plw-w:" + WEEK; }
+  function loadTS() { cleanupHistory(); ["daily", "weekly"].forEach(function (l) { try { TS[l] = JSON.parse(localStorage.getItem(tkey(l)) || "{}") || {}; } catch (e) { TS[l] = {}; } }); }
+  function saveTS(l) {
+    var names = {}; TASKS[l].forEach(function (tk) { names[tk.id] = tk.title; }); TS[l]._t = names;
+    try { localStorage.setItem(tkey(l), JSON.stringify(TS[l])); } catch (e) {}
+  }
+
+  /* ---------- History (kept on this device; anything older than ~2 months is cleared) ---------- */
+  function readJ(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } }
+  function isoOf(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function dateOf(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  var SDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  function dayLabel(s) { var d = dateOf(s); return SDAYS[d.getDay()] + " " + (d.getMonth() + 1) + "/" + d.getDate(); }
+  function savedKeys(prefix) {
+    var out = [];
+    try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf(prefix) === 0) out.push(k.slice(prefix.length)); } } catch (e) {}
+    return out;
+  }
+  function cleanupHistory() {
+    var cut = isoOf(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 62));
+    ["plw-g:", "plw-d:", "plw-w:"].forEach(function (p) { savedKeys(p).forEach(function (d) { if (d < cut) try { localStorage.removeItem(p + d); } catch (e) {} }); });
+  }
+  function walkOf(date) {
+    var st = readJ("plw-g:" + date) || {}, met = 0, no = 0, notList = [];
+    ORDER.forEach(function (id) { if (st[id] === "y") met++; else if (st[id] === "n") { no++; notList.push(id); } });
+    var left = TOTAL - met - no;
+    return { met: met, no: no, left: left, walked: met + no, done: !left, pct: pc(met, TOTAL), wpct: pc(met + no, TOTAL), notList: notList };
+  }
+  function tasksOf(l, rec, walk) {
+    rec = rec || {}; var names = rec._t || {}, seen = {}, rows = [];
+    TASKS[l].forEach(function (tk) {
+      seen[tk.id] = 1;
+      var done = tk.kind === "walk" ? (walk && walk.done) || !!rec[tk.id] : tk.kind === "obs" ? (rec[tk.id] || 0) > 0 : !!rec[tk.id];
+      rows.push({ title: tk.title, done: done, kind: tk.kind, count: rec[tk.id] || 0, notes: rec[tk.id + ":notes"] || 0 });
+    });
+    Object.keys(names).forEach(function (id) { if (!seen[id] && rec[id]) rows.push({ title: names[id], done: true, kind: "task" }); });
+    return rows;
+  }
+  function dayInfo(date) {
+    var walk = walkOf(date), rows = tasksOf("daily", readJ("plw-d:" + date), walk);
+    var obs = rows.filter(function (r) { return r.kind === "obs"; }).reduce(function (a, r) { return a + r.count; }, 0);
+    return { date: date, walk: walk, rows: rows, d: rows.filter(function (r) { return r.done && TASKS.daily.some(function (tk) { return tk.title === r.title; }); }).length, n: TASKS.daily.length, obs: obs };
+  }
+  function weekInfo(wk) {
+    var rows = tasksOf("weekly", readJ("plw-w:" + wk), null);
+    var p = wk.split("-");
+    return { wk: wk, label: "Week of " + (+p[1]) + "/" + (+p[2]), rows: rows, d: rows.filter(function (r) { return r.done; }).length, n: TASKS.weekly.length,
+      missed: rows.filter(function (r) { return !r.done; }).map(function (r) { return r.title; }) };
+  }
+  function historyDays() {
+    var cut = isoOf(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)), seen = {};
+    savedKeys("plw-g:").concat(savedKeys("plw-d:")).concat([S.date]).forEach(function (d) { if (d >= cut && d <= S.date) seen[d] = 1; });
+    return Object.keys(seen).sort().reverse().map(dayInfo).filter(function (x) { return x.date === S.date || x.walk.walked || x.d; });
+  }
+  function historyWeeks() {
+    var cut = isoOf(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 35)), seen = {};
+    savedKeys("plw-w:").concat([WEEK]).forEach(function (w) { if (w >= cut) seen[w] = 1; });
+    return Object.keys(seen).sort().reverse().map(weekInfo);
+  }
+  function walkBadge(w) {
+    if (!w.walked) return '<span class="dimtxt">No walk</span>';
+    if (!w.done) return '<span style="color:var(--blue)">Walk ' + w.wpct + '% walked</span>';
+    var g = grade(w.pct); return '<span class="g' + g + '">Walk ' + w.pct + '% · ' + g + '</span>';
+  }
+  function historyReport() {
+    var days = historyDays(), weeks = historyWeeks(), walks = days.filter(function (x) { return x.walk.done; });
+    var avg = walks.length ? Math.round(walks.reduce(function (a, x) { return a + x.walk.pct; }, 0) / walks.length) : 0;
+    var first = days.length ? days[days.length - 1].date : S.date;
+    var lines = ["Pro & Lumber 30-day report · " + dayLabel(first) + " to " + dayLabel(S.date),
+      "Walks finished: " + walks.length + (walks.length ? " · average " + avg + "% met (" + grade(avg) + ")" : ""), "", "DAYS"];
+    days.forEach(function (x) {
+      var w = x.walk.done ? "Walk " + x.walk.pct + "% " + grade(x.walk.pct) : x.walk.walked ? "Walk " + x.walk.wpct + "% walked" : "No walk";
+      lines.push("• " + dayLabel(x.date) + " · " + w + " · Daily " + x.d + "/" + x.n + (x.obs ? " · " + x.obs + " obs" : ""));
+    });
+    lines.push("", "WEEKS");
+    weeks.forEach(function (w) { lines.push("• " + w.label + " · " + w.d + "/" + w.n + (w.missed.length ? (w.wk === WEEK ? " · to do: " : " · missed: ") + w.missed.join(", ") : " · all done")); });
+    return lines.join("\n");
+  }
+  function findTask(id) { var l = TASKS.daily.some(function (x) { return x.id === id; }) ? "daily" : "weekly"; return { l: l, tk: TASKS[l].find(function (x) { return x.id === id; }) }; }
+  function walkInfo() { var t = totals(); return t.left ? pc(t.met + t.no, TOTAL) + "% walked" : pc(t.met, TOTAL) + "% met · grade " + grade(pc(t.met, TOTAL)); }
+  function isDone(l, tk) {
+    if (tk.kind === "walk") return !totals().left || !!TS[l][tk.id];
+    if (tk.kind === "obs") return (TS[l][tk.id] || 0) > 0;
+    return !!TS[l][tk.id];
+  }
+  function listProgress(l) { var a = TASKS[l]; return { d: a.filter(function (tk) { return isDone(l, tk); }).length, n: a.length }; }
 
   function counts(z) {
     var met = 0, no = 0;
@@ -361,7 +534,7 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
     return pages.length ? pages.map(function (p) { return p.replace(/^\n+|\n+$/g, ""); }) : [""];
   }
   /* "Lumber walk 11/15 · Aisle 17: J-hooks are full." -> date orange, area + standard blue, the rest white */
-  var LW_LINE = /^(Lumber walk \d+\/\d+)( · )([^:\n]+?)(: )?(.*)$/;
+  var LW_LINE = /^((?:Lumber walk|Observation|Monday meeting) \d+\/\d+)( · )([^:\n]+?)(: )?(.*)$/;
   function lineHtml(line) {
     var m = String(line).match(LW_LINE);
     if (!m) return esc(line);
@@ -371,23 +544,131 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
   function fmtDay(ts) { var d = new Date(ts || Date.now()); return (d.getMonth() + 1) + "/" + d.getDate(); }
 
   /* ---------- views ---------- */
+  /* Grade on the share of all standards that were met: A 90+, B 80+, C 70+, D 60+, F below */
+  function grade(p) { return p >= 90 ? "A" : p >= 80 ? "B" : p >= 70 ? "C" : p >= 60 ? "D" : "F"; }
+  function pc(x, n) { return Math.round(x / n * 100); }
   function home() {
-    var t = totals(), done = t.met + t.no, pct = Math.round(done / TOTAL * 100);
+    var t = totals(), walked = t.met + t.no, complete = !t.left;
     var tiles = SECTIONS.map(function (z, i) {
-      var c = counts(z);
-      var cls = c.no ? " flag" : (c.met === c.n ? " done" : "");
-      var lab = c.met === c.n ? "✔ done" : c.no ? c.no + " not met" : (c.n - c.ans) + " left";
-      var zp = Math.round(c.ans / c.n * 100);
+      var c = counts(z), whole = c.ans === c.n;
+      /* While walking: blue "walked" number. Once the area is fully walked, it switches to the
+         area's percent met and letter grade, colored with the grading scale (A/B green, C amber, D/F red). */
+      var g = whole ? grade(pc(c.met, c.n)) : "";
+      var cls = whole ? " gt g" + g : "";
       return '<button class="focusable tile' + cls + '" data-k="z:' + i + '"><span class="n">' + esc(z.name) + '</span>' +
-        '<span class="c"><b class="zp' + (c.ans ? '' : ' zero') + '">' + zp + '%</b><span class="lb">' + lab + '</span></span>' + meter(c.met, c.no, c.n) + '</button>';
+        (whole ? '<span class="wk gr"><b>' + pc(c.met, c.n) + '%</b> met · <i>' + g + '</i></span>'
+               : '<span class="wk' + (c.ans ? '' : ' zero') + '"><b>' + pc(c.ans, c.n) + '%</b> walked</span>') +
+        '<span class="mn"><span class="g">✔ ' + pc(c.met, c.n) + '%</span><span class="a' + (c.no ? '' : ' zero') + '">✕ ' + (pc(c.ans, c.n) - pc(c.met, c.n)) + '%</span></span>' +
+        meter(c.met, c.no, c.n) + '</button>';
     }).join("");
-    return '<div class="top"><div class="ttl"><small>Pro &amp; Lumber walk</small><b>' + esc(S.label) + '</b></div>' +
-      '<div class="pct' + (t.left ? "" : " all") + '">' + pct + '%</div></div>' +
+    var right;
+    if (complete) {
+      var mp = pc(t.met, TOTAL), g = grade(mp);
+      right = '<div class="final"><div class="fp g' + g + '"><b>' + mp + '%</b><span>met</span></div><div class="grade g' + g + '">' + g + '</div></div>';
+    } else {
+      right = '<div class="final"><div class="fp walking"><b>' + pc(walked, TOTAL) + '%</b><span>walked</span></div></div>';
+    }
+    return '<div class="top"><button class="focusable b back" data-k="back">‹ Hub</button><div class="ttl"><small>Lumber walk</small><b>' + esc(S.label) + '</b></div>' + right + '</div>' +
       meter(t.met, t.no, TOTAL) +
       '<div class="grid">' + tiles + '</div>' +
-      '<div class="row3"><button class="focusable b go" data-k="cont">' + (t.left ? '▶ Continue' : '✔ All checked') + '</button>' +
+      '<div class="row3"><button class="focusable b go" data-k="cont">' + (t.left ? '▶ Continue' : '✔ Walk done') + '</button>' +
       '<button class="focusable b" data-k="sum">Summary</button>' +
       '<button class="focusable b nt" data-k="notes">📝 Notes</button></div>';
+  }
+
+  function hubView() {
+    var t = totals(), dp = listProgress("daily"), wp = listProgress("weekly"), g = grade(pc(t.met, TOTAL));
+    var walkLine = t.left ? '<b>' + pc(t.met + t.no, TOTAL) + '%</b> walked today' : '<b class="g' + g + '">' + pc(t.met, TOTAL) + '% met · ' + g + '</b> walk done';
+    function tab(k, icon, title, line, met, no, n, cls) {
+      return '<button class="focusable htab' + (cls || "") + '" data-k="' + k + '"><span class="hi">' + icon + '</span>' +
+        '<span class="hm"><span class="ht">' + title + '</span><span class="hl">' + line + '</span>' + meter(met, no, n) + '</span><span class="hc">›</span></button>';
+    }
+    return '<div class="top"><div class="ttl"><small>Pro &amp; Lumber</small><b>' + esc(S.label) + '</b></div></div>' +
+      '<div class="hgrid">' +
+        tab("walk", "🪵", "Lumber Walk", walkLine, t.met, t.no, TOTAL, t.left ? "" : " gt g" + g) +
+        tab("daily", "☀️", "Daily", '<b>' + dp.d + ' of ' + dp.n + '</b> done today', dp.d, 0, dp.n, dp.d === dp.n ? " alldone" : "") +
+        tab("weekly", "📅", "Weekly", '<b>' + wp.d + ' of ' + wp.n + '</b> done · ' + WLABEL, wp.d, 0, wp.n, wp.d === wp.n ? " alldone" : "") +
+        tab("hist", "📊", "History", '<b>' + historyDays().length + ' days</b> · last 30 days &amp; weeks', 0, 0, 1, " nobar") +
+      '</div>' +
+      '<button class="focusable b wide nt" data-k="notes">📝 Work notes</button>';
+  }
+
+  function listView() {
+    var l = S.list, p = listProgress(l), edit = S.edit === l;
+    var rows = TASKS[l].map(function (tk) {
+      var done = isDone(l, tk), sub = esc(tk.desc || "");
+      if (tk.kind === "walk") sub = walkInfo() + " · tap to open";
+      if (tk.kind === "obs") { var c = TS[l][tk.id] || 0; if (c) sub = c + " logged today · tap to log another"; }
+      if (tk.kind === "meet") { var m = TS[l][tk.id + ":notes"] || 0; if (m) sub = m + " meeting note" + (m > 1 ? "s" : "") + " saved"; }
+      var side = edit
+        ? '<button class="focusable tbtn" data-k="te:' + tk.id + '" aria-label="Rename">✏️</button><button class="focusable tbtn' + (S.confirm === tk.id ? ' sure' : '') + '" data-k="tx:' + tk.id + '" aria-label="Remove">' + (S.confirm === tk.id ? 'Sure?' : '✕') + '</button>'
+        : (tk.kind === "obs" || tk.kind === "meet") ? '<button class="focusable tbtn nt" data-k="tn:' + tk.id + '" aria-label="Write a note">📝</button>' : '';
+      return '<div class="trow' + (done ? ' on' : '') + '"><button class="focusable tchk' + (done ? ' on' : '') + '" data-k="tc:' + tk.id + '" aria-label="Done">' + (done ? '✔' : '') + '</button>' +
+        '<button class="focusable ttxt" data-k="to:' + tk.id + '"><b>' + esc(tk.title) + '</b><small>' + sub + '</small></button>' + side + '</div>';
+    }).join("");
+    return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button>' +
+      '<div class="ttl"><small>' + (l === "daily" ? esc(S.label) : WLABEL) + '</small><b>' + (l === "daily" ? "Daily tasks" : "Weekly tasks") + '</b></div>' +
+      '<div class="pct' + (p.d === p.n ? ' all' : '') + '">' + p.d + '/' + p.n + '</div></div>' +
+      meter(p.d, 0, p.n) +
+      '<div class="scroll">' + (rows || '<div class="empty">No tasks yet. Tap ＋ Add task.</div>') + '</div>' +
+      '<div class="row2"><button class="focusable b nt" data-k="tadd">＋ Add task</button>' +
+      '<button class="focusable b' + (edit ? ' go' : '') + '" data-k="tedit">' + (edit ? '✔ Done editing' : '✏️ Edit list') + '</button></div>';
+  }
+
+  function histView() {
+    var days = S.htab !== "weeks";
+    var seg = '<div class="seg2"><button class="focusable b' + (days ? ' on' : '') + '" data-k="hdays">Days</button><button class="focusable b' + (days ? '' : ' on') + '" data-k="hweeks">Weeks</button></div>';
+    var rows;
+    if (days) rows = historyDays().map(function (x) {
+      return '<button class="focusable item hrow" data-k="hd:' + x.date + '"><div class="t"><small>' + dayLabel(x.date) + (x.date === S.date ? ' · today' : '') + '</small>' +
+        '<span class="hs">' + walkBadge(x.walk) + '<span class="dot2">·</span><span class="' + (x.d === x.n ? 'gA' : '') + '">Daily ' + x.d + '/' + x.n + '</span>' +
+        (x.obs ? '<span class="dot2">·</span><span style="color:var(--wood)">' + x.obs + ' obs</span>' : '') + '</span></div></button>';
+    }).join("");
+    else rows = historyWeeks().map(function (w) {
+      return '<button class="focusable item hrow" data-k="hw:' + w.wk + '"><div class="t"><small>' + w.label + (w.wk === WEEK ? ' · this week' : '') + '</small>' +
+        '<span class="hs"><span class="' + (w.d === w.n ? 'gA' : '') + '">' + w.d + '/' + w.n + ' done</span>' +
+        (w.missed.length ? '<span class="dot2">·</span><span class="dimtxt">' + (w.wk === WEEK ? 'to do: ' : 'missed: ') + esc(w.missed.join(", ")) + '</span>' : '') + '</span></div></button>';
+    }).join("");
+    return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button><div class="ttl"><small>Saved on this device</small><b>History</b></div></div>' +
+      seg + '<div class="scroll">' + (rows || '<div class="empty">Nothing saved yet.</div>') + '</div>' +
+      '<button class="focusable b wide nt" data-k="hsave">📝 Save 30-day report to Work notes</button>';
+  }
+  function histDayView() {
+    var x = dayInfo(S.hkey), w = x.walk, parts = [];
+    var big = w.done ? '<span class="g' + grade(w.pct) + '">' + w.pct + '% met · ' + grade(w.pct) + '</span>' : w.walked ? '<span style="color:var(--blue)">' + w.wpct + '% walked</span>' : '<span class="dimtxt">No walk this day</span>';
+    parts.push('<div class="hsec" tabindex="0">Lumber walk</div><div class="hbig focusable" tabindex="0">' + big +
+      '<small>' + w.met + ' met · ' + w.no + ' not met · ' + w.left + ' not checked</small></div>');
+    w.notList.forEach(function (id) {
+      parts.push('<div class="hline focusable a" tabindex="0">✕ <b>' + esc(SECTIONS[ITEM[id].zi].name) + ':</b> ' + esc(ITEM[id].text) + '</div>');
+    });
+    parts.push('<div class="hsec" tabindex="0">Daily tasks · ' + x.d + '/' + x.n + '</div>');
+    x.rows.forEach(function (r) {
+      parts.push('<div class="hline focusable' + (r.done ? ' g' : '') + '" tabindex="0">' + (r.done ? '✔ ' : '○ ') + esc(r.title) +
+        (r.kind === "obs" && r.count ? ' <span class="dimtxt">(' + r.count + ')</span>' : '') + '</div>');
+    });
+    return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button><div class="ttl"><small>History</small><b>' + dayLabel(S.hkey) + '</b></div></div>' +
+      '<div class="scroll">' + parts.join("") + '</div>';
+  }
+  function histWeekView() {
+    var w = weekInfo(S.hkey), parts = ['<div class="hsec" tabindex="0">Weekly tasks · ' + w.d + '/' + w.n + '</div>'];
+    w.rows.forEach(function (r) {
+      parts.push('<div class="hline focusable' + (r.done ? ' g' : '') + '" tabindex="0">' + (r.done ? '✔ ' : '○ ') + esc(r.title) +
+        (r.kind === "meet" && r.notes ? ' <span class="dimtxt">(' + r.notes + ' note' + (r.notes > 1 ? 's' : '') + ')</span>' : '') + '</div>');
+    });
+    return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button><div class="ttl"><small>History</small><b>' + w.label + '</b></div></div>' +
+      '<div class="scroll">' + parts.join("") + '</div>';
+  }
+
+  function obsDoneView() {
+    var o = S.obs || { name: "", text: "" }, em = obsEmail(o);
+    var mail = "mailto:" + MAIL_TO + "?subject=" + encodeURIComponent(em.subject) + "&body=" + encodeURIComponent(em.body);
+    return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button>' +
+      '<div class="ttl"><small>Observation saved</small><b>Ready to email</b></div></div>' +
+      '<div class="mailprev focusable" tabindex="0"><div class="mto">To: ' + MAIL_TO + '</div><div class="msub">' + esc(em.subject) + '</div><div class="mbody">' + esc(em.body) + '</div></div>' +
+      '<div class="hint">Also saved to Work notes.</div>' +
+      (IS_PHONE ? '<div class="row2" style="margin:0"><button class="focusable b" data-k="mcopy">📋 Copy</button><a class="focusable b go mailbtn" id="mail" data-k="mail" href="' + mail + '" target="_top">✉️ Email it now</a></div>'
+                : '<div class="hint" style="color:var(--wood)">Email it from your phone: Home Hub → Notes → Work.</div>') +
+      '<div class="row2 push"><button class="focusable b" data-k="obsmore">＋ Another</button><button class="focusable b go" data-k="back">✔ Done</button></div>';
   }
 
   function zoneView() {
@@ -460,18 +741,29 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
 
   function writeView() {
     var w = S.w;
+    if (w.mode === "obs") {
+      return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button>' +
+        '<div class="ttl"><small>Observation · ' + esc(S.label) + '</small><b>New observation</b></div></div>' +
+        '<label class="flab">Associate name</label>' +
+        '<input class="focusable say obsf" id="oname" data-k="oname" type="text" placeholder="Pinch and say their name" autocomplete="off" autocapitalize="words">' +
+        '<label class="flab">Behaviors observed</label>' +
+        '<input class="focusable say obsf" id="say" data-k="say" type="text" placeholder="Pinch and describe what you saw" autocomplete="off">' +
+        '<div class="hint">Saved to Work notes and set up as an email.</div>' +
+        '<div class="row2 push"><button class="focusable b" data-k="back">Cancel</button><button class="focusable b go" data-k="wsave">✔ Save</button></div>';
+    }
+    var isTask = w.mode === "task" || w.mode === "edittask";
     return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button>' +
-      '<div class="ttl"><small>To Home Hub · Work</small><b>' + esc(w.title) + '</b></div></div>' +
+      '<div class="ttl"><small>' + (isTask ? (w.list === "daily" ? "Daily tasks" : "Weekly tasks") : "To Home Hub · Work") + '</small><b>' + esc(w.title) + '</b></div></div>' +
       (w.ctx ? '<div class="ctx">' + esc(w.ctx) + '</div>' : '') +
-      '<input class="focusable say" id="say" data-k="say" type="text" placeholder="Pinch here and talk" autocomplete="off">' +
-      '<div class="hint">Pinch the box, say your note, then Save.</div>' +
-      '<div class="row2 push"><button class="focusable b" data-k="back">Cancel</button><button class="focusable b go" data-k="wsave">✔ Save note</button></div>';
+      '<input class="focusable say" id="say" data-k="say" type="text" placeholder="' + (isTask ? 'Pinch here and say the task' : 'Pinch here and talk') + '" value="' + esc(w.value || "") + '" autocomplete="off">' +
+      '<div class="hint">Pinch the box, ' + (isTask ? 'say the task' : 'say your note') + ', then Save.</div>' +
+      '<div class="row2 push"><button class="focusable b" data-k="back">Cancel</button><button class="focusable b go" data-k="wsave">' + (isTask ? '✔ Save' : '✔ Save note') + '</button></div>';
   }
 
   /* ---------- background pictures (phone only, saved on this phone) ---------- */
   var IS_PHONE = (function () { try { return innerHeight > innerWidth * 1.2 && matchMedia("(pointer: coarse)").matches; } catch (e) { return false; } })();
   var BG_KEY = "plw-bg-", bgMenu = false;
-  function pageKey() { return { home: "home", zone: "areas", sum: "summary", notes: "notes", note: "notes", write: "notes" }[S.view] || "home"; }
+  function pageKey() { return { hist: "history", hday: "history", hweek: "history", hub: "hub", list: "tasks", obsdone: "tasks", home: "home", zone: "areas", sum: "summary", notes: "notes", note: "notes", write: "notes" }[S.view] || "home"; }
   function getBg(k) { try { return localStorage.getItem(BG_KEY + k) || ""; } catch (e) { return ""; } }
   function applyBg() {
     var url = IS_PHONE ? getBg(pageKey()) : "";
@@ -518,7 +810,9 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
   var app = document.getElementById("app");
   function render() {
     var v = S.view;
-    app.innerHTML = v === "home" ? home() : v === "zone" ? zoneView() : v === "sum" ? summary() :
+    app.innerHTML = v === "hist" ? histView() : v === "hday" ? histDayView() : v === "hweek" ? histWeekView() :
+      v === "hub" ? hubView() : v === "list" ? listView() : v === "obsdone" ? obsDoneView() :
+      v === "home" ? home() : v === "zone" ? zoneView() : v === "sum" ? summary() :
       v === "notes" ? notesView() : v === "note" ? noteView() : writeView();
     applyBg(); addBgButton();
     if (S.toast) { var t = document.createElement("div"); t.className = "toast"; t.textContent = S.toast; app.appendChild(t); S.toast = ""; setTimeout(function () { t.remove(); }, 2600); }
@@ -526,7 +820,8 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
     S.focus = null;
     if (want) el = app.querySelector('[data-k="' + want + '"]:not(:disabled)');
     if (!el) {
-      var def = { home: "cont", zone: "y:" + SECTIONS[S.zone].ids[firstOpen(SECTIONS[S.zone])], sum: "back", notes: "say", note: "back", write: "say" }[S.view];
+      var firstOpenTask = (TASKS[S.list].find(function (tk) { return !isDone(S.list, tk); }) || TASKS[S.list][0] || {}).id;
+      var def = { write: S.w && S.w.mode === "obs" ? "oname" : "say", hist: S.htab === "weeks" ? "hweeks" : "hdays", hday: "back", hweek: "back", hub: "walk", list: "tc:" + firstOpenTask, obsdone: "mail", home: "cont", zone: "y:" + SECTIONS[S.zone].ids[firstOpen(SECTIONS[S.zone])], sum: "back", notes: "say", note: "back" }[S.view];
       el = app.querySelector('[data-k="' + def + '"]:not(:disabled)') || app.querySelector(".focusable:not(:disabled)");
       if (S.view === "sum") { var r = app.querySelector(".item"); if (r) el = r; }
     }
@@ -536,19 +831,46 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
   }
   function wireSay() {
     var inp = document.getElementById("say"); if (!inp) return;
-    inp.addEventListener("change", function () { if (inp.value.trim()) commitSay(); });   /* the glasses' dictation commits with "change" */
+    var nm = document.getElementById("oname");
+    if (nm) nm.addEventListener("change", function () { if (nm.value.trim()) inp.focus(); });
+    inp.addEventListener("change", function () { if (inp.value.trim() && (!nm || nm.value.trim())) commitSay(); });   /* the glasses' dictation commits with "change" */
+  }
+  function capWords(s) { return s.replace(/\b\w/g, function (c) { return c.toUpperCase(); }); }
+  function fullDate() { return DAYS[now.getDay()] + ", " + (now.getMonth() + 1) + "/" + now.getDate() + "/" + now.getFullYear(); }
+ var MAIL_TO = "joe.barcey@store.lowes.com";   /* observations are addressed here */
+  function obsEmail(o) {
+    return {
+      subject: "Observation - " + o.name + " - " + (now.getMonth() + 1) + "/" + now.getDate() + "/" + now.getFullYear(),
+      body: "Associate: " + o.name + "\nDate: " + fullDate() + "\nDepartment: Pro & Lumber\n\nBehaviors observed:\n" + o.text + "\n"
+    };
   }
   function commitSay() {
     var inp = document.getElementById("say"); if (!inp) return;
-    var t = inp.value.trim(); if (!t) { inp.focus(); return; }
+    var t = inp.value.trim();
+    var nmEl = document.getElementById("oname");
+    if (nmEl && !nmEl.value.trim()) { S.toast = "Add the associate's name first"; nmEl.focus(); var tt = document.createElement("div"); tt.className = "toast"; tt.textContent = S.toast; S.toast = ""; app.appendChild(tt); setTimeout(function () { tt.remove(); }, 2200); return; }
+    if (!t) { inp.focus(); return; }
     inp.value = "";
     t = t.charAt(0).toUpperCase() + t.slice(1);
     if (S.view === "notes") { addNote(t); S.toast = "Saved to Work notes"; S.focus = "say"; render(); return; }
     if (S.view === "write") {
       var w = S.w;
-      if (w.mode === "append") noteOp({ t: "append", id: w.id, text: t, u: Date.now() });
-      else addNote((w.prefix ? w.prefix + "\n" : "") + t);
-      S.toast = w.mode === "append" ? "Added to the note" : "Saved to Work notes";
+      if (w.mode === "obs") {
+        var who = capWords(nmEl.value.trim());
+        addNote("Observation " + fmtDay() + " · " + who + "\nBehaviors observed: " + t);
+        TS.daily[w.id] = (TS.daily[w.id] || 0) + 1; saveTS("daily");
+        S.obs = { name: who, text: t, id: w.id }; S.w = null; S.view = "obsdone"; render(); return;
+      }
+      if (w.mode === "meet") {
+        addNote("Monday meeting " + fmtDay() + " · Notes\n" + t);
+        TS.weekly[w.id] = true; TS.weekly[w.id + ":notes"] = (TS.weekly[w.id + ":notes"] || 0) + 1; saveTS("weekly");
+        S.toast = "Meeting notes saved to Work notes";
+      } else if (w.mode === "task") {
+        TASKS[w.list].push({ id: "c" + uid(), kind: "task", title: t, desc: "" }); saveTasks(); S.toast = "Task added";
+      } else if (w.mode === "edittask") {
+        var ft = findTask(w.id); if (ft.tk) { ft.tk.title = t; saveTasks(); } S.toast = "Task renamed";
+      } else if (w.mode === "append") { noteOp({ t: "append", id: w.id, text: t, u: Date.now() }); S.toast = "Added to the note"; }
+      else { addNote((w.prefix ? w.prefix + "\n" : "") + t); S.toast = "Saved to Work notes"; }
       S.view = w.back; S.focus = w.focus; S.keepScroll = w.scroll; S.w = null; render();
     }
   }
@@ -559,7 +881,12 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
     S.confirm = false; bgMenu = false;
     if (S.view === "zone") { if (S.origin === "sum") { S.view = "sum"; } else { S.view = "home"; S.focus = "z:" + S.zone; } }
     else if (S.view === "sum") { S.view = "home"; S.focus = "sum"; }
-    else if (S.view === "notes") { S.view = "home"; S.focus = "notes"; }
+    else if (S.view === "home") { S.view = "hub"; S.focus = "walk"; }
+    else if (S.view === "hist") { S.view = "hub"; S.focus = "hist"; }
+    else if (S.view === "hday" || S.view === "hweek") { S.view = "hist"; S.focus = (S.view === "hday" ? "hd:" : "hw:") + S.hkey; }
+    else if (S.view === "list") { S.view = "hub"; S.focus = S.list; S.edit = null; }
+    else if (S.view === "obsdone") { S.view = "list"; S.list = "daily"; S.focus = "tc:" + (S.obs ? S.obs.id : ""); }
+    else if (S.view === "notes") { S.view = S.notesBack || "hub"; S.focus = "notes"; }
     else if (S.view === "note") { S.view = "notes"; S.focus = "o:" + S.nid; }
     else if (S.view === "write") { S.view = S.w.back; S.focus = S.w.focus; S.keepScroll = S.w.scroll; S.w = null; }
     render();
@@ -600,7 +927,45 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
       S.st = {}; save(); S.confirm = false; S.view = "home"; S.focus = "cont"; render(); return;
     }
     /* notes */
-    if (k === "notes") { S.view = "notes"; render(); syncNotes(); return; }
+    if (k === "notes") { S.notesBack = S.view; S.view = "notes"; render(); syncNotes(); return; }
+    /* hub + tasks */
+    if (k === "walk") { S.view = "home"; S.focus = null; render(); return; }
+    if (k === "hist") { S.view = "hist"; S.htab = S.htab || "days"; render(); return; }
+    if (k === "hdays" || k === "hweeks") { S.htab = k === "hdays" ? "days" : "weeks"; S.focus = k; render(); return; }
+    if (k.indexOf("hd:") === 0 || k.indexOf("hw:") === 0) { S.hkey = k.slice(3); S.view = k.charAt(1) === "d" ? "hday" : "hweek"; render(); return; }
+    if (k === "mcopy") {
+      var em2 = obsEmail(S.obs || { name: "", text: "" }), txt = "To: " + MAIL_TO + "\nSubject: " + em2.subject + "\n\n" + em2.body;
+      var done = function () { S.toast = "Copied. Paste it into your email."; S.focus = "mcopy"; render(); };
+      try { navigator.clipboard.writeText(txt).then(done, function () { S.toast = "Couldn't copy on this phone"; render(); }); } catch (e) { S.toast = "Couldn't copy on this phone"; render(); }
+      return;
+    }
+    if (k === "hsave") { addNote(historyReport()); S.toast = "30-day report saved to Work notes"; S.focus = "hsave"; render(); return; }
+    if (k === "daily" || k === "weekly") { S.view = "list"; S.list = k; S.edit = null; S.confirm = false; render(); return; }
+    if (k === "tedit") { S.edit = S.edit === S.list ? null : S.list; S.confirm = false; S.focus = "tedit"; render(); return; }
+    if (k === "tadd") { S.w = { mode: "task", list: S.list, title: "New " + S.list + " task", back: "list", focus: "tadd" }; S.view = "write"; render(); return; }
+    if (k === "obsmore") { var oid = S.obs ? S.obs.id : "d-obs"; S.w = { mode: "obs", id: oid, title: "New observation", ctx: "Saved to Work notes, ready to email.", back: "list", focus: "tc:" + oid }; S.view = "write"; render(); return; }
+    if (/^(tc|to|tn|te|tx):/.test(k)) {
+      var op = k.slice(0, 2), ft = findTask(k.slice(3)), tk = ft.tk, l = ft.l;
+      if (!tk) return;
+      var sc = app.querySelector('.scroll'), keep = sc ? sc.scrollTop : null;
+      var writeFor = function (mode) {
+        S.w = mode === "obs" ? { mode: "obs", id: tk.id, title: "New observation", ctx: "Saved to Work notes, ready to email.", back: "list", focus: k, scroll: keep }
+                             : { mode: "meet", id: tk.id, title: "Monday meeting notes", ctx: "Saved to Work notes.", back: "list", focus: k, scroll: keep };
+        S.view = "write"; render();
+      };
+      if (op === "te") { S.w = { mode: "edittask", list: l, id: tk.id, title: "Rename task", value: tk.title, back: "list", focus: k, scroll: keep }; S.view = "write"; render(); return; }
+      if (op === "tx") {
+        if (S.confirm !== tk.id) { S.confirm = tk.id; S.focus = k; S.keepScroll = keep; render(); return; }
+        TASKS[l] = TASKS[l].filter(function (x) { return x.id !== tk.id; }); saveTasks(); S.confirm = false; S.toast = "Task removed"; S.keepScroll = keep; render(); return;
+      }
+      if (op === "tn") { writeFor(tk.kind === "obs" ? "obs" : "meet"); return; }
+      if (op === "to" && tk.kind === "walk") { S.view = "home"; render(); return; }
+      if (op === "to" && (tk.kind === "obs" || tk.kind === "meet")) { writeFor(tk.kind); return; }
+      if (tk.kind === "obs") { if (TS[l][tk.id]) { TS[l][tk.id] = 0; saveTS(l); S.focus = k; S.keepScroll = keep; render(); } else writeFor("obs"); return; }
+      if (tk.kind === "walk" && !totals().left) { S.toast = "Checks itself off when the walk is done"; S.focus = k; render(); return; }
+      if (TS[l][tk.id]) delete TS[l][tk.id]; else TS[l][tk.id] = true;
+      saveTS(l); S.focus = k; S.keepScroll = keep; render(); return;
+    }
     if (k === "saynew") { commitSay(); return; }
     if (k.indexOf("o:") === 0) { S.nid = k.slice(2); S.chunk = 0; S.confirm = false; S.view = "note"; render(); return; }
     if (k === "cp") { S.chunk = Math.max(0, S.chunk - 1); S.focus = "cp"; render(); return; }
@@ -663,7 +1028,7 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
       if (a && a.classList && a.classList.contains("focusable")) { ev.preventDefault(); if (!ev.repeat && !a.disabled) a.click(); }
     }
     else if (k === "Escape" || (k === "Backspace" && !inInput)) {
-      if (S.view !== "home") { ev.preventDefault(); goBack(); }
+      if (S.view !== "hub") { ev.preventDefault(); goBack(); }
     }
   });
 
