@@ -410,8 +410,19 @@ body.light #bg::after { background: rgba(255,255,255,.08); }
   try { TASKS = JSON.parse(localStorage.getItem("plw-tasks") || "null"); } catch (e) {}
   if (!TASKS || !TASKS.daily || !TASKS.weekly) TASKS = JSON.parse(JSON.stringify(DEFAULT_TASKS));
   function saveTasks() { try { localStorage.setItem("plw-tasks", JSON.stringify(TASKS)); } catch (e) {} }
-  /* weeks run Monday to Sunday */
-  var WEEK = (function () { var d = new Date(now.getFullYear(), now.getMonth(), now.getDate()); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); })();
+  /* work weeks run Saturday to Friday */
+  var WEEK = (function () { var d = new Date(now.getFullYear(), now.getMonth(), now.getDate()); d.setDate(d.getDate() - (d.getDay() + 1) % 7); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); })();
+  /* one-time switch from Monday weeks: carry this week's checkmarks over so nothing is lost */
+  (function () {
+    try {
+      if (localStorage.getItem("plw-w:" + WEEK)) return;
+      var d = new Date(now.getFullYear(), now.getMonth(), now.getDate()); d.setDate(d.getDate() - (d.getDay() + 6) % 7);
+      var oldKey = "plw-w:" + d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+      var old = localStorage.getItem(oldKey);
+      if (old && oldKey !== "plw-w:" + WEEK && dateKeyDiff(oldKey.slice(6), WEEK) < 7) localStorage.setItem("plw-w:" + WEEK, old);
+    } catch (e) {}
+    function dateKeyDiff(a, b) { var p = a.split("-"), q = b.split("-"); return Math.abs((new Date(+q[0], q[1] - 1, +q[2]) - new Date(+p[0], p[1] - 1, +p[2])) / 864e5); }
+  })();
   var WLABEL = "Week of " + (+WEEK.split("-")[1]) + "/" + (+WEEK.split("-")[2]);
   var TS = { daily: {}, weekly: {} };
   function tkey(l) { return l === "daily" ? "plw-d:" + S.date : "plw-w:" + WEEK; }
