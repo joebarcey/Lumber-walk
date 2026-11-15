@@ -161,6 +161,9 @@ body.has-bg .tchk.on { background: var(--green); }
 .ttxt small { font-size: 0.72rem; font-weight: 600; color: var(--dim); line-height: 1.2; }
 .trow.on .ttxt b { color: var(--green); }
 .tbtn { width: 2.9rem; flex: none; padding: 0; font-size: 1.05rem; }
+.tbtn.drag { touch-action: none; font-size: 1.3rem; color: var(--blue); border-color: var(--blue); cursor: grab; }
+.trow.dragging { opacity: .85; transform: scale(1.02); }
+.trow.dragging .ttxt { border-color: var(--blue); background: #15233b; }
 .mailbtn { display: grid; place-items: center; text-decoration: none; color: var(--green); }
 
 /* history */
@@ -613,9 +616,14 @@ body.has-bg .tchk.on { background: var(--green); }
       if (tk.kind === "obs") { var c = TS[l][tk.id] || 0; if (c) sub = c + " logged today · tap to log another"; }
       if (tk.kind === "meet") { var m = TS[l][tk.id + ":notes"] || 0; if (m) sub = m + " meeting note" + (m > 1 ? "s" : "") + " saved"; }
       var side = edit
-        ? '<button class="focusable tbtn" data-k="te:' + tk.id + '" aria-label="Rename">✏️</button><button class="focusable tbtn' + (S.confirm === tk.id ? ' sure' : '') + '" data-k="tx:' + tk.id + '" aria-label="Remove">' + (S.confirm === tk.id ? 'Sure?' : '✕') + '</button>'
+        ? (IS_PHONE ? ''
+                    : '<button class="focusable tbtn" data-k="tu:' + tk.id + '" aria-label="Move up">▲</button><button class="focusable tbtn" data-k="tw:' + tk.id + '" aria-label="Move down">▼</button>') +
+          '<button class="focusable tbtn" data-k="te:' + tk.id + '" aria-label="Rename">✏️</button><button class="focusable tbtn' + (S.confirm === tk.id ? ' sure' : '') + '" data-k="tx:' + tk.id + '" aria-label="Remove">' + (S.confirm === tk.id ? 'Sure?' : '✕') + '</button>'
         : (tk.kind === "obs" || tk.kind === "meet") ? '<button class="focusable tbtn nt" data-k="tn:' + tk.id + '" aria-label="Write a note">📝</button>' : '';
-      return '<div class="trow' + (done ? ' on' : '') + '"><button class="focusable tchk' + (done ? ' on' : '') + '" data-k="tc:' + tk.id + '" aria-label="Done">' + (done ? '✔' : '') + '</button>' +
+      /* while editing, the checkbox makes room for the ☰ drag handle (phone) or ▲▼ (glasses) */
+      var lead = edit ? (IS_PHONE ? '<button class="tbtn drag" data-drag="' + tk.id + '" aria-label="Hold and drag to move">☰</button>' : '')
+                      : '<button class="focusable tchk' + (done ? ' on' : '') + '" data-k="tc:' + tk.id + '" aria-label="Done">' + (done ? '✔' : '') + '</button>';
+      return '<div class="trow' + (done ? ' on' : '') + '" data-row="' + tk.id + '">' + lead +
         '<button class="focusable ttxt" data-k="to:' + tk.id + '"><b>' + esc(tk.title) + '</b><small>' + sub + '</small></button>' + side + '</div>';
     }).join("");
     return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button>' +
@@ -869,7 +877,33 @@ body.has-bg .tchk.on { background: var(--green); }
     }
     var sc = app.querySelector('.scroll'); if (sc && S.keepScroll != null) { sc.scrollTop = S.keepScroll; } S.keepScroll = null;
     if (el) { el.focus({ preventScroll: true }); el.scrollIntoView({ block: 'nearest' }); }
-    wireSay();
+    wireSay(); wireDrag();
+  }
+  /* Phone: in Edit list, hold ☰ and drag a task up or down */
+  function wireDrag() {
+    var list = app.querySelector(".scroll"); if (!list || !app.querySelector("[data-drag]")) return;
+    [].forEach.call(app.querySelectorAll("[data-drag]"), function (h) {
+      h.addEventListener("pointerdown", function (ev) {
+        ev.preventDefault();
+        var row = h.closest(".trow"); row.classList.add("dragging");
+        var move = function (e) {
+          var y = e.clientY, rows = [].slice.call(list.querySelectorAll(".trow")).filter(function (r) { return r !== row; });
+          var before = rows.find(function (r) { var b = r.getBoundingClientRect(); return y < b.top + b.height / 2; });
+          if (before) list.insertBefore(row, before); else list.appendChild(row);
+          var lb = list.getBoundingClientRect();   /* scroll the list when dragging near its edges */
+          if (y < lb.top + 40) list.scrollTop -= 12; else if (y > lb.bottom - 40) list.scrollTop += 12;
+        };
+        var up = function () {
+          document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", up);
+          row.classList.remove("dragging");
+          var order = [].map.call(list.querySelectorAll(".trow"), function (r) { return r.getAttribute("data-row"); });
+          TASKS[S.list].sort(function (a, b) { return order.indexOf(a.id) - order.indexOf(b.id); }); saveTasks();
+          S.keepScroll = list.scrollTop; render();
+        };
+        /* listen on the whole page: moving the row in the list would otherwise drop the finger's events */
+        document.addEventListener("pointermove", move); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
+      });
+    });
   }
   function wireSay() {
     var inp = document.getElementById("say"); if (!inp) return;
@@ -1002,6 +1036,11 @@ body.has-bg .tchk.on { background: var(--green); }
     if (k === "tedit") { S.edit = S.edit === S.list ? null : S.list; S.confirm = false; S.focus = "tedit"; render(); return; }
     if (k === "tadd") { S.w = { mode: "task", list: S.list, title: "New " + S.list + " task", back: "list", focus: "tadd" }; S.view = "write"; render(); return; }
     if (k === "obsmore") { var oid = S.obs ? S.obs.id : "d-obs"; S.w = { mode: "obs", id: oid, title: "New observation", ctx: "Saved to Work notes, ready to email.", back: "list", focus: "tc:" + oid }; S.view = "write"; render(); return; }
+    if (/^(tu|tw):/.test(k)) {
+      var mv = findTask(k.slice(3)), arr = TASKS[mv.l], ix = arr.indexOf(mv.tk), to = ix + (k.charAt(1) === "u" ? -1 : 1);
+      if (mv.tk && to >= 0 && to < arr.length) { arr.splice(ix, 1); arr.splice(to, 0, mv.tk); saveTasks(); }
+      var scm = app.querySelector('.scroll'); S.keepScroll = scm ? scm.scrollTop : null; S.focus = k; render(); return;
+    }
     if (/^(tc|to|tn|te|tx):/.test(k)) {
       var op = k.slice(0, 2), ft = findTask(k.slice(3)), tk = ft.tk, l = ft.l;
       if (!tk) return;
