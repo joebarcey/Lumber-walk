@@ -50,10 +50,14 @@ input::placeholder { color: var(--dim); }
 .scroll::-webkit-scrollbar { display: none; }
 
 /* home: tiles stretch to fill the screen */
-.grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); gap: 0.333333rem; }
-.tile { display: grid; grid-template-rows: 1fr auto auto; align-items: center; justify-items: start; gap: 0.166667rem; padding: 0.333333rem 0.5rem 0.416667rem; text-align: left; min-height: 0; }
+.grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 0.333333rem; }
+.tile { min-width: 0; overflow: hidden; display: grid; grid-template-rows: 1fr auto auto; align-items: center; justify-items: start; gap: 0.166667rem; padding: 0.333333rem 0.5rem 0.416667rem; text-align: left; min-height: 0; }
+.tile .lb { white-space: nowrap; }
+.tile .zp { font-size: 1.05rem; font-weight: 800; color: var(--blue); font-variant-numeric: tabular-nums; line-height: 1; }
+.tile .zp.zero { color: var(--dim); opacity: .7; }
+.tile.done .zp { color: var(--green); } .tile.flag .zp { color: var(--amber); }
 .tile .n { font-size: 0.875rem; font-weight: 700; line-height: 1.05; }
-.tile .c { font-size: 0.708333rem; font-weight: 700; color: var(--dim); font-variant-numeric: tabular-nums; }
+.tile .c { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.3rem; max-width: 100%; font-size: 0.708333rem; font-weight: 700; color: var(--dim); font-variant-numeric: tabular-nums; }
 .tile .meter { width: 100%; height: 0.291667rem; }
 .tile.done { border-color: var(--green); } .tile.done .n, .tile.done .c { color: var(--green); }
 .tile.flag { border-color: var(--amber); } .tile.flag .c { color: var(--amber); }
@@ -372,9 +376,10 @@ body.has-bg .meter { background: rgba(0,0,0,.4); }
     var tiles = SECTIONS.map(function (z, i) {
       var c = counts(z);
       var cls = c.no ? " flag" : (c.met === c.n ? " done" : "");
-      var lab = c.met === c.n ? "✔ all met" : c.no ? c.no + " not met" : c.ans ? c.ans + " of " + c.n : c.n + " to check";
+      var lab = c.met === c.n ? "✔ done" : c.no ? c.no + " not met" : (c.n - c.ans) + " left";
+      var zp = Math.round(c.ans / c.n * 100);
       return '<button class="focusable tile' + cls + '" data-k="z:' + i + '"><span class="n">' + esc(z.name) + '</span>' +
-        '<span class="c">' + lab + '</span>' + meter(c.met, c.no, c.n) + '</button>';
+        '<span class="c"><b class="zp' + (c.ans ? '' : ' zero') + '">' + zp + '%</b><span class="lb">' + lab + '</span></span>' + meter(c.met, c.no, c.n) + '</button>';
     }).join("");
     return '<div class="top"><div class="ttl"><small>Pro &amp; Lumber walk</small><b>' + esc(S.label) + '</b></div>' +
       '<div class="pct' + (t.left ? "" : " all") + '">' + pct + '%</div></div>' +
