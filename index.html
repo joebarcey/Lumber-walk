@@ -254,6 +254,24 @@ body.light.has-bg .ttl, body.light.has-bg .hsec, body.light.has-bg .flab, body.l
 body.light.has-bg .hline, body.light.has-bg .hbig { background: rgba(255,255,255,.66); }
 body.light.has-bg .meter { background: rgba(255,255,255,.6); }
 body.light #bg::after { background: rgba(255,255,255,.08); }
+
+/* overall-impact views */
+.lp { font-size: 0.66rem; font-weight: 800; color: #c0322b; white-space: nowrap; }
+.tile .lp, .tile.gt .lp { color: #c0322b !important; }
+.wbar { display: flex; height: 0.9rem; border-radius: 0.45rem; overflow: hidden; background: #1b2230; flex: none; }
+body.light .wbar { background: #d3d7de; }
+.wbar i { display: block; height: 100%; }
+.wbar .wmet { background: var(--green); }
+.wbar .wleft { background: transparent; }
+.wseg { height: 100%; border: 0; border-radius: 0; padding: 0; min-width: 3px; border-left: 2px solid rgba(255,255,255,.7); }
+.wkey { display: flex; flex-wrap: wrap; gap: 0.15rem 0.6rem; font-size: 0.62rem; font-weight: 800; flex: none; }
+.wkey span { display: inline-flex; align-items: center; gap: 0.25rem; white-space: nowrap; }
+.wkey i { width: 0.6rem; height: 0.6rem; border-radius: 0.15rem; display: inline-block; }
+.hits { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; font-size: 0.68rem; flex: none; }
+.hitb { font-size: 0.68rem; padding: 0.1rem 0.4rem; border-radius: 0.5rem; height: auto; }
+.hitb span { color: #c0322b; }
+body:not(.light) .hitb span { color: #ff8a7e; } body:not(.light) .tile .lp { color: #ff8a7e !important; }
+body.light .top .ttl b, body.light .top .ttl small { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -628,18 +646,28 @@ body.light #bg::after { background: rgba(255,255,255,.08); }
   /* Grade on the share of all standards that were met: A 90+, B 80+, C 70+, D 60+, F below */
   function grade(p) { return p >= 90 ? "A" : p >= 80 ? "B" : p >= 70 ? "C" : p >= 60 ? "D" : "F"; }
   function pc(x, n) { return Math.round(x / n * 100); }
+  /* Home layouts: "boxes" (−pts on each box), "bar" (where-the-points-went bar), "hits" (biggest-hit strip),
+     "sort" (boxes sorted by impact), "all" (everything). Each missed standard costs 100/TOTAL points overall. */
+  var HVIEWS = ["all", "boxes", "bar", "hits", "sort", "plain"];
+  var HVIEW = (function () { try { var v = localStorage.getItem("plw-hview"); return HVIEWS.indexOf(v) >= 0 ? v : "boxes"; } catch (e) { return "boxes"; } })();
+  function setHView(v) { HVIEW = v; try { localStorage.setItem("plw-hview", v); } catch (e) {} }
+  var AREA_COLORS = ["#c0322b", "#b85c00", "#8a6d00", "#6a3fa0", "#1d5aa6", "#0b7a7a", "#a0306a", "#5d6a80", "#7a4f00", "#2f6b4f", "#9a3412", "#334155"];
+  function lostPts(c) { return c.no * 100 / TOTAL; }
+  function fmtPts(p) { return (Math.round(p * 10) / 10).toFixed(1); }
   function home() {
     var t = totals(), walked = t.met + t.no, complete = !t.left;
-    var tiles = SECTIONS.map(function (z, i) {
-      var c = counts(z), whole = c.ans === c.n;
-      /* While walking: blue "walked" number. Once the area is fully walked, it switches to the
-         area's percent met and letter grade, colored with the grading scale (A/B green, C amber, D/F red). */
+    var show = function (k) { return HVIEW === k || (HVIEW === "all" && (IS_PHONE || k === "boxes" || k === "bar")); };   /* glasses: "all" keeps it to boxes + bar so the grid fits */
+    var order = SECTIONS.map(function (z, i) { return i; });
+    if (HVIEW === "sort") order.sort(function (a, b) { return counts(SECTIONS[b]).no - counts(SECTIONS[a]).no || a - b; });
+    var tiles = order.map(function (i) {
+      var z = SECTIONS[i], c = counts(z), whole = c.ans === c.n;
       var g = whole ? grade(pc(c.met, c.n)) : "";
       var cls = whole ? " gt g" + g : "";
+      var lp = (show("boxes") || HVIEW === "sort") && c.no ? '<span class="lp">−' + fmtPts(lostPts(c)) + ' overall</span>' : '';
       return '<button class="focusable tile' + cls + '" data-k="z:' + i + '"><span class="n">' + esc(z.name) + '</span>' +
         (whole ? '<span class="wk gr"><b>' + pc(c.met, c.n) + '%</b> met · <i>' + g + '</i></span>'
                : '<span class="wk' + (c.ans ? '' : ' zero') + '"><b>' + pc(c.ans, c.n) + '%</b> walked</span>') +
-        '<span class="mn"><span class="g">✔ ' + pc(c.met, c.n) + '%</span><span class="a' + (c.no ? '' : ' zero') + '">✕ ' + (pc(c.ans, c.n) - pc(c.met, c.n)) + '%</span></span>' +
+        (lp || '<span class="mn"><span class="g">✔ ' + pc(c.met, c.n) + '%</span><span class="a' + (c.no ? '' : ' zero') + '">✕ ' + (pc(c.ans, c.n) - pc(c.met, c.n)) + '%</span></span>') +
         meter(c.met, c.no, c.n) + '</button>';
     }).join("");
     var right;
@@ -649,8 +677,20 @@ body.light #bg::after { background: rgba(255,255,255,.08); }
     } else {
       right = '<div class="final"><div class="fp walking"><b>' + pc(walked, TOTAL) + '%</b><span>walked</span></div></div>';
     }
-    return '<div class="top"><button class="focusable b back" data-k="back">‹ Hub</button><div class="ttl"><small>Lumber walk</small><b>' + esc(S.label) + '</b></div>' + right + '</div>' +
-      meter(t.met, t.no, TOTAL) +
+    /* areas that cost points, worst first */
+    var hits = SECTIONS.map(function (z, i) { return { i: i, z: z, c: counts(z) }; }).filter(function (x) { return x.c.no; })
+      .sort(function (a, b) { return b.c.no - a.c.no || a.i - b.i; });
+    var bar;
+    if (show("bar")) {
+      bar = '<div class="wbar"><i class="wmet" style="width:' + (t.met / TOTAL * 100) + '%"></i>' +
+        hits.map(function (x) { return '<button class="wseg" data-k="z:' + x.i + '" style="width:' + (x.c.no / TOTAL * 100) + '%;background:' + AREA_COLORS[x.i % 12] + '" aria-label="' + esc(x.z.name) + '"></button>'; }).join("") +
+        '<i class="wleft" style="width:' + (t.left / TOTAL * 100) + '%"></i></div>' +
+        (hits.length && (IS_PHONE || HVIEW === "bar") ? '<div class="wkey">' + hits.map(function (x) { return '<span><i style="background:' + AREA_COLORS[x.i % 12] + '"></i>' + esc(x.z.name) + ' −' + fmtPts(lostPts(x.c)) + '</span>'; }).join("") + '</div>' : '');
+    } else bar = meter(t.met, t.no, TOTAL);
+    var strip = show("hits") && hits.length ? '<div class="hits"><b>Biggest hits:</b> ' + hits.slice(0, 3).map(function (x) {
+        return '<button class="focusable hitb" data-k="z:' + x.i + '">' + esc(x.z.name) + ' <span>−' + fmtPts(lostPts(x.c)) + '</span></button>'; }).join("") + '</div>' : '';
+    return '<div class="top"><button class="focusable b back" data-k="back">‹</button><div class="ttl"><small>Walk</small><b>' + esc(S.label) + '</b></div>' + right + '</div>' +
+      bar + strip +
       '<div class="grid">' + tiles + '</div>' +
       '<div class="row3"><button class="focusable b go" data-k="cont">' + (t.left ? '▶ Continue' : '✔ Walk done') + '</button>' +
       '<button class="focusable b" data-k="sum">Summary</button>' +
