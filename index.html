@@ -167,6 +167,8 @@ body.has-bg .tchk.on { background: var(--green); }
 .htab.nobar .meter { display: none; }
 .seg2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.33rem; height: 2.4rem; flex: none; }
 .seg2 button { font-size: 0.95rem; }
+.item .oname { color: var(--blue); font-size: 1rem; }
+.seg2.s3 { grid-template-columns: 1fr 1fr 1.5fr; }
 .seg2 button.on { border-color: var(--fg); background: #1c2433; }
 .hrow { min-height: 3.3rem; }
 .hs { display: flex; flex-wrap: wrap; gap: 0 0.35rem; font-size: 0.85rem !important; font-weight: 700; -webkit-line-clamp: unset !important; }
@@ -388,6 +390,9 @@ body.has-bg .tchk.on { background: var(--green); }
   }
   function dayInfo(date) {
     var walk = walkOf(date), rows = tasksOf("daily", readJ("plw-d:" + date), walk);
+    /* observations saved from either device count toward that day's Observations task */
+    var synced = observations().filter(function (o) { return o.date === date; }).length;
+    rows.forEach(function (r) { if (r.kind === "obs" && synced > r.count) { r.count = synced; r.done = true; } });
     var obs = rows.filter(function (r) { return r.kind === "obs"; }).reduce(function (a, r) { return a + r.count; }, 0);
     return { date: date, walk: walk, rows: rows, d: rows.filter(function (r) { return r.done && TASKS.daily.some(function (tk) { return tk.title === r.title; }); }).length, n: TASKS.daily.length, obs: obs };
   }
@@ -506,7 +511,7 @@ body.has-bg .tchk.on { background: var(--green); }
       .then(function () {
         busy = false;
         var a = document.activeElement;
-        if ((S.view === "notes" || S.view === "note") && !(a && a.tagName === "INPUT" && a.value)) { S.focus = a && a.getAttribute && a.getAttribute("data-k"); render(); }
+        if ((S.view === "notes" || S.view === "note" || S.view === "hist" || S.view === "hday" || S.view === "hobs") && !(a && a.tagName === "INPUT" && a.value)) { S.focus = a && a.getAttribute && a.getAttribute("data-k"); render(); }
         else paintSync();
         if (again) { again = false; syncNotes(); }
       });
@@ -616,10 +621,15 @@ body.has-bg .tchk.on { background: var(--green); }
   }
 
   function histView() {
-    var days = S.htab !== "weeks";
-    var seg = '<div class="seg2"><button class="focusable b' + (days ? ' on' : '') + '" data-k="hdays">Days</button><button class="focusable b' + (days ? '' : ' on') + '" data-k="hweeks">Weeks</button></div>';
+    var ht = S.htab || "days", days = ht === "days";
+    var seg = '<div class="seg2 s3"><button class="focusable b' + (ht === "days" ? ' on' : '') + '" data-k="hdays">Days</button><button class="focusable b' + (ht === "weeks" ? ' on' : '') + '" data-k="hweeks">Weeks</button>' +
+      '<button class="focusable b' + (ht === "obs" ? ' on' : '') + '" data-k="hobs">Observations</button></div>';
     var rows;
-    if (days) rows = historyDays().map(function (x) {
+    if (ht === "obs") rows = observations().map(function (o) {
+      return '<button class="focusable item hrow" data-k="ho:' + o.id + '"><div class="t"><small>' + dayLabel(o.date) + '</small><b class="oname">' + esc(o.name) + '</b>' +
+        '<span>' + esc(o.text) + '</span></div></button>';
+    }).join("") || (HUB.status === "none" ? '<div class="empty">Link Lumber Walk to Home Hub to see observations.</div>' : '<div class="empty">No observations saved yet.</div>');
+    else if (days) rows = historyDays().map(function (x) {
       return '<button class="focusable item hrow" data-k="hd:' + x.date + '"><div class="t"><small>' + dayLabel(x.date) + (x.date === S.date ? ' · today' : '') + '</small>' +
         '<span class="hs">' + walkBadge(x.walk) + '<span class="dot2">·</span><span class="' + (x.d === x.n ? 'gA' : '') + '">Daily ' + x.d + '/' + x.n + '</span>' +
         (x.obs ? '<span class="dot2">·</span><span style="color:var(--wood)">' + x.obs + ' obs</span>' : '') + '</span></div></button>';
@@ -629,7 +639,8 @@ body.has-bg .tchk.on { background: var(--green); }
         '<span class="hs"><span class="' + (w.d === w.n ? 'gA' : '') + '">' + w.d + '/' + w.n + ' done</span>' +
         (w.missed.length ? '<span class="dot2">·</span><span class="dimtxt">' + (w.wk === WEEK ? 'to do: ' : 'missed: ') + esc(w.missed.join(", ")) + '</span>' : '') + '</span></div></button>';
     }).join("");
-    return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button><div class="ttl"><small>Saved on this device</small><b>History</b></div></div>' +
+    return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button><div class="ttl"><small>' + (ht === "obs" ? 'From Work notes' : 'Saved on this device') + '</small><b>History</b></div>' +
+      (ht === "obs" ? '<span id="sync" class="sync ' + HUB.status + '">' + syncLabel() + '</span>' : '') + '</div>' +
       seg + '<div class="scroll">' + (rows || '<div class="empty">Nothing saved yet.</div>') + '</div>' +
       '<button class="focusable b wide nt" data-k="hsave">📝 Save 30-day report to Work notes</button>';
   }
@@ -641,6 +652,13 @@ body.has-bg .tchk.on { background: var(--green); }
     w.notList.forEach(function (id) {
       parts.push('<div class="hline focusable a" tabindex="0">✕ <b>' + esc(SECTIONS[ITEM[id].zi].name) + ':</b> ' + esc(ITEM[id].text) + '</div>');
     });
+    var dayObs = observations().filter(function (o) { return o.date === S.hkey; });
+    if (dayObs.length) {
+      parts.push('<div class="hsec">Observations · ' + dayObs.length + '</div>');
+      dayObs.forEach(function (o) {
+        parts.push('<button class="focusable item hrow" data-k="ho:' + o.id + '"><div class="t"><small style="color:var(--blue)">' + esc(o.name) + '</small><span>' + esc(o.text) + '</span></div></button>');
+      });
+    }
     parts.push('<div class="hsec" tabindex="0">Daily tasks · ' + x.d + '/' + x.n + '</div>');
     x.rows.forEach(function (r) {
       parts.push('<div class="hline focusable' + (r.done ? ' g' : '') + '" tabindex="0">' + (r.done ? '✔ ' : '○ ') + esc(r.title) +
@@ -648,6 +666,16 @@ body.has-bg .tchk.on { background: var(--green); }
     });
     return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button><div class="ttl"><small>History</small><b>' + dayLabel(S.hkey) + '</b></div></div>' +
       '<div class="scroll">' + parts.join("") + '</div>';
+  }
+  function histObsView() {
+    var o = observations().find(function (x) { return x.id === S.oid; });
+    if (!o) { S.view = "hist"; return histView(); }
+    var em = obsEmail(o), mail = "mailto:" + MAIL_TO + "?subject=" + encodeURIComponent(em.subject) + "&body=" + encodeURIComponent(em.body);
+    S.obs = o;
+    return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button><div class="ttl"><small>Observation · ' + dayLabel(o.date) + '</small><b>' + esc(o.name) + '</b></div></div>' +
+      '<div class="mailprev focusable" tabindex="0"><div class="mto">To: ' + MAIL_TO + '</div><div class="msub">' + esc(em.subject) + '</div><div class="mbody">' + esc(em.body) + '</div></div>' +
+      (IS_PHONE ? '<div class="row2" style="margin:0"><button class="focusable b" data-k="mcopy">📋 Copy</button><a class="focusable b go mailbtn" id="mail" data-k="mail" href="' + mail + '" target="_top">✉️ Email again</a></div>'
+                : '<div class="hint" style="color:var(--wood)">Email it from your phone.</div>');
   }
   function histWeekView() {
     var w = weekInfo(S.hkey), parts = ['<div class="hsec" tabindex="0">Weekly tasks · ' + w.d + '/' + w.n + '</div>'];
@@ -763,7 +791,7 @@ body.has-bg .tchk.on { background: var(--green); }
   /* ---------- background pictures (phone only, saved on this phone) ---------- */
   var IS_PHONE = (function () { try { return innerHeight > innerWidth * 1.2 && matchMedia("(pointer: coarse)").matches; } catch (e) { return false; } })();
   var BG_KEY = "plw-bg-", bgMenu = false;
-  function pageKey() { return { hist: "history", hday: "history", hweek: "history", hub: "hub", list: "tasks", obsdone: "tasks", home: "home", zone: "areas", sum: "summary", notes: "notes", note: "notes", write: "notes" }[S.view] || "home"; }
+  function pageKey() { return { hobs: "history", hist: "history", hday: "history", hweek: "history", hub: "hub", list: "tasks", obsdone: "tasks", home: "home", zone: "areas", sum: "summary", notes: "notes", note: "notes", write: "notes" }[S.view] || "home"; }
   function getBg(k) { try { return localStorage.getItem(BG_KEY + k) || ""; } catch (e) { return ""; } }
   function applyBg() {
     var url = IS_PHONE ? getBg(pageKey()) : "";
@@ -810,7 +838,7 @@ body.has-bg .tchk.on { background: var(--green); }
   var app = document.getElementById("app");
   function render() {
     var v = S.view;
-    app.innerHTML = v === "hist" ? histView() : v === "hday" ? histDayView() : v === "hweek" ? histWeekView() :
+    app.innerHTML = v === "hist" ? histView() : v === "hobs" ? histObsView() : v === "hday" ? histDayView() : v === "hweek" ? histWeekView() :
       v === "hub" ? hubView() : v === "list" ? listView() : v === "obsdone" ? obsDoneView() :
       v === "home" ? home() : v === "zone" ? zoneView() : v === "sum" ? summary() :
       v === "notes" ? notesView() : v === "note" ? noteView() : writeView();
@@ -821,7 +849,7 @@ body.has-bg .tchk.on { background: var(--green); }
     if (want) el = app.querySelector('[data-k="' + want + '"]:not(:disabled)');
     if (!el) {
       var firstOpenTask = (TASKS[S.list].find(function (tk) { return !isDone(S.list, tk); }) || TASKS[S.list][0] || {}).id;
-      var def = { write: S.w && S.w.mode === "obs" ? "oname" : "say", hist: S.htab === "weeks" ? "hweeks" : "hdays", hday: "back", hweek: "back", hub: "walk", list: "tc:" + firstOpenTask, obsdone: "mail", home: "cont", zone: "y:" + SECTIONS[S.zone].ids[firstOpen(SECTIONS[S.zone])], sum: "back", notes: "say", note: "back" }[S.view];
+      var def = { hobs: IS_PHONE ? "mail" : "back", write: S.w && S.w.mode === "obs" ? "oname" : "say", hist: S.htab === "weeks" ? "hweeks" : S.htab === "obs" ? "hobs" : "hdays", hday: "back", hweek: "back", hub: "walk", list: "tc:" + firstOpenTask, obsdone: "mail", home: "cont", zone: "y:" + SECTIONS[S.zone].ids[firstOpen(SECTIONS[S.zone])], sum: "back", notes: "say", note: "back" }[S.view];
       el = app.querySelector('[data-k="' + def + '"]:not(:disabled)') || app.querySelector(".focusable:not(:disabled)");
       if (S.view === "sum") { var r = app.querySelector(".item"); if (r) el = r; }
     }
@@ -839,10 +867,22 @@ body.has-bg .tchk.on { background: var(--green); }
   function fullDate() { return DAYS[now.getDay()] + ", " + (now.getMonth() + 1) + "/" + now.getDate() + "/" + now.getFullYear(); }
  var MAIL_TO = "joe.barcey@store.lowes.com";   /* observations are addressed here */
   function obsEmail(o) {
+    var d = o.at ? new Date(o.at) : now;
     return {
-      subject: "Observation - " + o.name + " - " + (now.getMonth() + 1) + "/" + now.getDate() + "/" + now.getFullYear(),
-      body: "Associate: " + o.name + "\nDate: " + fullDate() + "\nDepartment: Pro & Lumber\n\nBehaviors observed:\n" + o.text + "\n"
+      subject: "Observation - " + o.name + " - " + (d.getMonth() + 1) + "/" + d.getDate() + "/" + d.getFullYear(),
+      body: "Associate: " + o.name + "\nDate: " + DAYS[d.getDay()] + ", " + (d.getMonth() + 1) + "/" + d.getDate() + "/" + d.getFullYear() +
+        "\nDepartment: Pro & Lumber\n\nBehaviors observed:\n" + o.text + "\n"
     };
+  }
+  /* Observations live in Work notes (synced through Home Hub), so they show the same on phone and glasses */
+  function observations() {
+    /* deleted notes are kept as hidden markers for syncing, so observations stay here even after the note is deleted */
+    return HUB.notes.filter(function (n) { return /^Observation \d+\/\d+ · /.test(n.text || ""); })
+      .map(function (n) {
+        var lines = n.text.split("\n"), name = lines[0].replace(/^Observation \d+\/\d+ · /, "").replace(/^Email this$/, "(no name)");
+        var body = lines.slice(1).join("\n").replace(/^Behaviors observed:\s*/, "");
+        return { id: n.id, name: name, text: body, at: n.created || n.u || 0, date: isoOf(new Date(n.created || n.u || 0)) };
+      }).sort(function (a, b) { return b.at - a.at; });
   }
   function commitSay() {
     var inp = document.getElementById("say"); if (!inp) return;
@@ -883,6 +923,7 @@ body.has-bg .tchk.on { background: var(--green); }
     else if (S.view === "sum") { S.view = "home"; S.focus = "sum"; }
     else if (S.view === "home") { S.view = "hub"; S.focus = "walk"; }
     else if (S.view === "hist") { S.view = "hub"; S.focus = "hist"; }
+    else if (S.view === "hobs") { S.view = S.oback || "hist"; S.focus = "ho:" + S.oid; }
     else if (S.view === "hday" || S.view === "hweek") { S.view = "hist"; S.focus = (S.view === "hday" ? "hd:" : "hw:") + S.hkey; }
     else if (S.view === "list") { S.view = "hub"; S.focus = S.list; S.edit = null; }
     else if (S.view === "obsdone") { S.view = "list"; S.list = "daily"; S.focus = "tc:" + (S.obs ? S.obs.id : ""); }
@@ -930,8 +971,9 @@ body.has-bg .tchk.on { background: var(--green); }
     if (k === "notes") { S.notesBack = S.view; S.view = "notes"; render(); syncNotes(); return; }
     /* hub + tasks */
     if (k === "walk") { S.view = "home"; S.focus = null; render(); return; }
-    if (k === "hist") { S.view = "hist"; S.htab = S.htab || "days"; render(); return; }
-    if (k === "hdays" || k === "hweeks") { S.htab = k === "hdays" ? "days" : "weeks"; S.focus = k; render(); return; }
+    if (k === "hist") { S.view = "hist"; S.htab = S.htab || "days"; render(); syncNotes(); return; }
+    if (k === "hdays" || k === "hweeks" || k === "hobs") { S.htab = k === "hdays" ? "days" : k === "hweeks" ? "weeks" : "obs"; S.focus = k; render(); if (k === "hobs") syncNotes(); return; }
+    if (k.indexOf("ho:") === 0) { S.oid = k.slice(3); S.oback = S.view; S.view = "hobs"; render(); return; }
     if (k.indexOf("hd:") === 0 || k.indexOf("hw:") === 0) { S.hkey = k.slice(3); S.view = k.charAt(1) === "d" ? "hday" : "hweek"; render(); return; }
     if (k === "mcopy") {
       var em2 = obsEmail(S.obs || { name: "", text: "" }), txt = "To: " + MAIL_TO + "\nSubject: " + em2.subject + "\n\n" + em2.body;
