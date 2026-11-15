@@ -170,6 +170,8 @@ body.has-bg .tchk.on { background: var(--green); }
 .item .oname { color: var(--blue); font-size: 1rem; }
 .obstab { display: flex; justify-content: space-between; align-items: center; height: 2.6rem; padding: 0 0.7rem; flex: none; margin-top: 0.35rem; text-align: left;
   font-size: 0.85rem; letter-spacing: .08em; text-transform: uppercase; color: var(--wood); border-color: var(--wood); }
+.nmtab { color: var(--amber); border-color: var(--amber); }
+.nmtab .oc { background: var(--amber); }
 .obstab .oc { background: var(--wood); color: #000; border-radius: 1rem; min-width: 1.4rem; padding: 0 0.4rem; text-align: center; letter-spacing: 0; }
 .oname-row { min-height: 2.6rem; justify-content: space-between; margin-left: 0.8rem; }
 .oname-row .opn { font-size: 0.75rem; color: var(--dim); font-weight: 700; display: inline !important; }
@@ -654,9 +656,14 @@ body.has-bg .tchk.on { background: var(--green); }
     var big = w.done ? '<span class="g' + grade(w.pct) + '">' + w.pct + '% met · ' + grade(w.pct) + '</span>' : w.walked ? '<span style="color:var(--blue)">' + w.wpct + '% walked</span>' : '<span class="dimtxt">No walk this day</span>';
     parts.push('<div class="hsec" tabindex="0">Lumber walk</div><div class="hbig focusable" tabindex="0">' + big +
       '<small>' + w.met + ' met · ' + w.no + ' not met · ' + w.left + ' not checked</small></div>');
-    w.notList.forEach(function (id) {
-      parts.push('<div class="hline focusable a" tabindex="0">✕ <b>' + esc(SECTIONS[ITEM[id].zi].name) + ':</b> ' + esc(ITEM[id].text) + '</div>');
-    });
+    if (w.notList.length) {
+      /* the not-met list stays closed until opened, like observations */
+      var nOpen = S.notOpen === S.hkey;
+      parts.push('<button class="focusable b obstab nmtab' + (nOpen ? ' on' : '') + '" data-k="nottog"><span>' + (nOpen ? '▾' : '▸') + '  Not met</span><span class="oc">' + w.notList.length + '</span></button>');
+      if (nOpen) w.notList.forEach(function (id) {
+        parts.push('<div class="hline focusable a" tabindex="0">✕ <b>' + esc(SECTIONS[ITEM[id].zi].name) + ':</b> ' + esc(ITEM[id].text) + '</div>');
+      });
+    }
     var dayObs = observations().filter(function (o) { return o.date === S.hkey; });
     if (dayObs.length) {
       /* closed by default so observations aren't on screen until you open them */
@@ -980,6 +987,7 @@ body.has-bg .tchk.on { background: var(--green); }
     if (k === "walk") { S.view = "home"; S.focus = null; render(); return; }
     if (k === "hist") { S.view = "hist"; S.htab = S.htab || "days"; render(); syncNotes(); return; }
     if (k === "hdays" || k === "hweeks" || k === "hobs") { S.htab = k === "hdays" ? "days" : k === "hweeks" ? "weeks" : "obs"; S.focus = k; render(); if (k === "hobs") syncNotes(); return; }
+    if (k === "nottog") { S.notOpen = S.notOpen === S.hkey ? null : S.hkey; S.focus = "nottog"; var sc2 = app.querySelector('.scroll'); S.keepScroll = sc2 ? sc2.scrollTop : null; render(); return; }
     if (k === "obstog") { S.obsOpen = S.obsOpen === S.hkey ? null : S.hkey; S.focus = "obstog"; var sc0 = app.querySelector('.scroll'); S.keepScroll = sc0 ? sc0.scrollTop : null; render(); return; }
     if (k.indexOf("ho:") === 0) { var sc1 = app.querySelector('.scroll'); S.oscroll = sc1 ? sc1.scrollTop : null; S.oid = k.slice(3); S.oback = S.view; S.view = "hobs"; render(); return; }
     if (k.indexOf("hd:") === 0 || k.indexOf("hw:") === 0) { S.hkey = k.slice(3); S.view = k.charAt(1) === "d" ? "hday" : "hweek"; render(); return; }
