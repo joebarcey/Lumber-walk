@@ -1256,6 +1256,17 @@ body.light .top .ttl b, body.light .top .ttl small { white-space: nowrap; }
   load();
   render();
   if (queue.length) syncNotes();
+
+  /* New day: start a fresh walk and daily list automatically. Everything is already saved under
+     its own date, so yesterday stays in History. Checked every minute and whenever the app comes back. */
+  function checkDay() {
+    var d = new Date();
+    if (isoOf(d) !== S.date) { try { keepNotes(); } catch (e) {} location.reload(); }
+  }
+  setInterval(checkDay, 60000);
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") checkDay(); });
+  window.addEventListener("focus", checkDay);
+  window.addEventListener("pageshow", checkDay);
 })();
 </script>
 </body>
