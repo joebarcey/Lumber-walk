@@ -397,13 +397,20 @@ body.light .top .ttl b, body.light .top .ttl small { white-space: nowrap; }
     np: 0, nid: null, chunk: 0, w: null, toast: ""
   };
 
+  var UK = "plw-sync-u", SU = {};
+  try { SU = JSON.parse(localStorage.getItem(UK) || "{}") || {}; } catch (e) {}
+  var wsTimer = null;
+  function markSync(k) {
+    SU[k] = Date.now(); try { localStorage.setItem(UK, JSON.stringify(SU)); } catch (e) {}
+    clearTimeout(wsTimer); wsTimer = setTimeout(function () { if (typeof walkSync === "function") walkSync(); }, 1500);
+  }
   function key() { return "plw-g:" + S.date; }   /* same key as before, so today's walk carries over */
   function load() {
     S.st = {};
     try { var v = localStorage.getItem(key()); if (v) S.st = JSON.parse(v) || {}; } catch (e) {}
     loadTS();
   }
-  function save() { try { localStorage.setItem(key(), JSON.stringify(S.st)); } catch (e) {} }
+  function save() { try { localStorage.setItem(key(), JSON.stringify(S.st)); } catch (e) {} markSync(key()); }
   function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 
   /* ---------- Daily & Weekly tasks ---------- */
@@ -427,7 +434,7 @@ body.light .top .ttl b, body.light .top .ttl small { white-space: nowrap; }
   var TASKS = null;
   try { TASKS = JSON.parse(localStorage.getItem("plw-tasks") || "null"); } catch (e) {}
   if (!TASKS || !TASKS.daily || !TASKS.weekly) TASKS = JSON.parse(JSON.stringify(DEFAULT_TASKS));
-  function saveTasks() { try { localStorage.setItem("plw-tasks", JSON.stringify(TASKS)); } catch (e) {} }
+  function saveTasks() { try { localStorage.setItem("plw-tasks", JSON.stringify(TASKS)); } catch (e) {} markSync("plw-tasks"); }
   /* work weeks run Saturday to Friday */
   var WEEK = (function () { var d = new Date(now.getFullYear(), now.getMonth(), now.getDate()); d.setDate(d.getDate() - (d.getDay() + 1) % 7); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); })();
   /* one-time switch from Monday weeks: carry this week's checkmarks over so nothing is lost */
@@ -448,6 +455,7 @@ body.light .top .ttl b, body.light .top .ttl small { white-space: nowrap; }
   function saveTS(l) {
     var names = {}; TASKS[l].forEach(function (tk) { names[tk.id] = tk.title; }); TS[l]._t = names;
     try { localStorage.setItem(tkey(l), JSON.stringify(TS[l])); } catch (e) {}
+    markSync(tkey(l));
   }
 
   /* ---------- History (kept on this device; anything older than ~2 months is cleared) ---------- */
@@ -1256,6 +1264,56 @@ body.light .top .ttl b, body.light .top .ttl small { white-space: nowrap; }
   load();
   render();
   if (queue.length) syncNotes();
+
+  /* ---------- Walk, Daily, Weekly and History sync between glasses and phone ----------
+     Its own space in the same Google storage. Each saved day/week is one item; the newest change wins. */
+  function walkKeys() {
+    var cut = isoOf(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 62)), out = ["plw-tasks"];
+    ["plw-g:", "plw-d:", "plw-w:"].forEach(function (p) { savedKeys(p).forEach(function (d) { if (d >= cut) out.push(p + d); }); });
+    return out;
+  }
+  function inWindow(k) {
+    if (k === "plw-tasks") return true;
+    var m = /^plw-[gdw]:(\d{4}-\d\d-\d\d)$/.exec(k); if (!m) return false;
+    return m[1] >= isoOf(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 62));
+  }
+  var wbusy = false, wagain = false, wtimer = null;
+  function walkSync() {
+    if (!SYNC) return;
+    if (wbusy) { wagain = true; return; }
+    wbusy = true;
+    var base = SYNC + (SYNC.indexOf("?") >= 0 ? "&" : "?");
+    fetch(base + "action=get&space=lumberwalk&t=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("get"); return r.json(); })
+      .then(function (d) {
+        var remote = (d && d.k) || {}, changed = false, push = false, out = {};
+        Object.keys(remote).forEach(function (k) {
+          var r = remote[k]; if (!r || !inWindow(k)) return;
+          var has = localStorage.getItem(k) !== null, lu = SU[k] || (has ? 1 : 0);
+          if ((r.u || 0) > lu) { try { localStorage.setItem(k, r.v); } catch (e) {} SU[k] = r.u; changed = true; }
+        });
+        walkKeys().forEach(function (k) {
+          var v = localStorage.getItem(k); if (v === null) return;
+          var u = SU[k] || 1; out[k] = { v: v, u: u };
+          if (!remote[k] || (remote[k].u || 0) < u) push = true;
+        });
+        try { localStorage.setItem(UK, JSON.stringify(SU)); } catch (e) {}
+        if (changed) {
+          try { var t = JSON.parse(localStorage.getItem("plw-tasks") || "null"); if (t && t.daily && t.weekly) TASKS = t; } catch (e) {}
+          load();
+          var a = document.activeElement;
+          if (!(a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA")) && !S.confirm && !S.edit) {
+            S.focus = (a && a.getAttribute && a.getAttribute("data-k")) || S.focus; render();
+          }
+        }
+        if (push) return fetch(base + "space=lumberwalk", { method: "POST", body: JSON.stringify({ k: out }) });
+      })
+      .catch(function () {})
+      .then(function () { wbusy = false; if (wagain) { wagain = false; walkSync(); } });
+  }
+  setInterval(function () { if (document.visibilityState !== "hidden") walkSync(); }, 20000);
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") walkSync(); });
+  walkSync();
 
   /* New day: start a fresh walk and daily list automatically. Everything is already saved under
      its own date, so yesterday stays in History. Checked every minute and whenever the app comes back. */
