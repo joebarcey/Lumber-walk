@@ -965,7 +965,8 @@ body.light .top .ttl b, body.light .top .ttl small { white-space: nowrap; }
     }).join("");
     return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button>' +
       '<div class="stats"><span class="g">' + t.met + ' met</span><span class="a">' + t.no + ' not</span><span class="d">' + t.left + ' left</span></div>' +
-      '<span style="flex:1"></span><button class="focusable b side nt" data-k="plan"' + (t.met + t.no ? '' : ' disabled') + '>📧 Plan</button><button class="focusable b side nt" data-k="send"' + (t.no ? '' : ' disabled') + '>📝 Send</button></div>' +
+      '<span style="flex:1"></span><button class="focusable b side nt" data-k="send"' + (t.no ? '' : ' disabled') + '>📝 Send</button></div>' +
+      '<button class="focusable b wide go" data-k="plan" style="flex:none;margin:0 0 0.35rem"' + (t.met + t.no ? '' : ' disabled') + '>📧 Email battle plan</button>' +
       (list.length ? '<div class="scroll">' + rows +
         '<button class="focusable b wide' + (S.confirm ? " sure" : "") + '" data-k="reset">' + (S.confirm ? "Sure? This clears today's walk" : "Reset today's walk") + '</button></div>'
         : '<div class="empty win">All ' + TOTAL + ' standards met.<br>Go get a coffee.</div><button class="focusable b wide' + (S.confirm ? " sure" : "") + '" data-k="reset">' + (S.confirm ? "Sure?" : "Reset today's walk") + '</button>');
