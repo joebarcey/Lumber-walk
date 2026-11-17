@@ -934,19 +934,63 @@ body.light .top .ttl b, body.light .top .ttl small { white-space: nowrap; }
     tips.forEach(function (tp) { L.push("  • " + tp); });
     L.push("");
     L.push("Let's go get it.");
-    return { subject: "Battle Plan · Pro & Lumber · " + S.label + " · Walk " + pc(t.met, TOTAL) + "% (" + g + ")", body: L.join("\n") };
+    var body = L.join("\n"), cutAt = body.indexOf("———— TEAM HUDDLE");
+    var pct = pc(t.met, TOTAL), F = "font-family:Arial,Helvetica,sans-serif;";
+    var rowsH = areas.map(function (a) {
+      var chk = a.met + a.ids.length, sp = pc(a.met, a.all), sg = grade(sp), col = GCOL[sg];
+      var bar = chk ? '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse"><tr>' +
+          (sp > 0 ? '<td width="' + sp + '%" style="background:' + col + ';height:10px;font-size:0;line-height:0">&nbsp;</td>' : '') +
+          (sp < 100 ? '<td style="background:#e9ecf0;height:10px;font-size:0;line-height:0">&nbsp;</td>' : '') + '</tr></table>' : '';
+      return '<tr><td style="' + F + 'padding:7px 6px;border-bottom:1px solid #eceff3;font-size:14px;font-weight:bold">' + esc(a.sec.name) + '</td>' +
+        '<td width="40%" style="padding:7px 6px;border-bottom:1px solid #eceff3">' + bar + '</td>' +
+        '<td align="right" style="' + F + 'padding:7px 6px;border-bottom:1px solid #eceff3;font-size:14px;white-space:nowrap">' + (chk ? sp + '%' : '<span style="color:#9aa3ad">not walked</span>') + '</td>' +
+        '<td align="center" style="padding:7px 6px;border-bottom:1px solid #eceff3">' + (chk ? '<span style="' + F + 'display:inline-block;min-width:22px;background:' + col + ';color:#fff;font-weight:bold;font-size:13px;padding:3px 8px;border-radius:12px">' + sg + '</span>' : '') + '</td></tr>';
+    }).join("");
+    var li = function (arr) { return arr.map(function (x) { return '<li style="margin:0 0 6px">' + esc(x) + '</li>'; }).join(""); };
+    var team = '<div style="' + F + 'max-width:580px;color:#1d2430">' +
+      '<div style="background:#1f3a5f;color:#ffffff;padding:14px 18px;font-size:18px;font-weight:bold;border-radius:10px 10px 0 0">Team Huddle · Pro &amp; Lumber · ' + esc(S.label) + '</div>' +
+      '<div style="border:1px solid #dde1e6;border-top:0;padding:16px 18px;border-radius:0 0 10px 10px">' +
+      '<p style="margin:0 0 12px;font-size:15px">Team,<br>' + esc(wins.length ? "Thank you. These areas were 100% today: " + wins.join(", ") + "." : "Thanks for the work today. Here's where we stand.") + '</p>' +
+      '<div style="text-align:center;margin:6px 0 10px"><img src="cid:score" width="320" alt="Walk score ' + pct + '%, grade ' + g + '" style="width:320px;max-width:100%;height:auto"></div>' +
+      '<div style="font-size:12px;font-weight:bold;letter-spacing:1px;color:#5b6573;text-transform:uppercase;margin:6px 0 4px">Scores by area</div>' +
+      '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 14px">' + rowsH + '</table>' +
+      '<div style="font-size:12px;font-weight:bold;letter-spacing:1px;color:#5b6573;text-transform:uppercase;margin:6px 0 4px">Where we focus</div>' +
+      (focus.length ? '<ol style="margin:0 0 14px;padding-left:22px;font-size:15px">' + li(focus.slice(0, 3).map(function (id) { return SECTIONS[ITEM[id].zi].name + ": " + ITEM[id].text; })) + '</ol>'
+                    : '<p style="margin:0 0 14px;font-size:15px">Keep it where it is. Same standards, same effort.</p>') +
+      '<div style="font-size:12px;font-weight:bold;letter-spacing:1px;color:#5b6573;text-transform:uppercase;margin:6px 0 4px">How we keep getting better</div>' +
+      '<ul style="margin:0 0 14px;padding-left:22px;font-size:15px">' + li(tips) + '</ul>' +
+      '<p style="margin:0;font-size:15px;font-weight:bold">Let\'s go get it.</p></div></div>';
+    var html = '<div style="' + F + 'font-size:14px;white-space:pre-wrap;color:#1d2430">' + esc(cutAt > 0 ? body.slice(0, cutAt).replace(/\s+$/, "") : body) + '</div>' +
+      '<p style="' + F + 'margin:22px 0 12px;color:#8a94a0;font-size:12px;letter-spacing:1px">———— TEAM HUDDLE · forward this part ————</p>' + team;
+    return { subject: "Battle Plan · Pro & Lumber · " + S.label + " · Walk " + pct + "% (" + g + ")", body: body, html: html, pct: pct, grade: g };
+  }
+  var GCOL = { A: "#2e9d4f", B: "#7cb342", C: "#e0a400", D: "#f57c00", F: "#d32f2f" };
+  function scoreImage(pct, g) {
+    var c = document.createElement("canvas"); c.width = 640; c.height = 380;
+    var x = c.getContext("2d"), cx = 320, cy = 250, r = 160, FF = "Arial, Helvetica, sans-serif";
+    x.fillStyle = "#ffffff"; x.fillRect(0, 0, 640, 380);
+    x.lineCap = "round"; x.lineWidth = 34;
+    x.strokeStyle = "#e9ecf0"; x.beginPath(); x.arc(cx, cy, r, Math.PI, 2 * Math.PI); x.stroke();
+    x.strokeStyle = GCOL[g]; x.beginPath(); x.arc(cx, cy, r, Math.PI, Math.PI + Math.PI * Math.max(0.01, pct / 100)); x.stroke();
+    x.textAlign = "center";
+    x.fillStyle = "#5b6573"; x.font = "bold 26px " + FF; x.fillText("PRO & LUMBER WALK · " + S.label.toUpperCase(), cx, 38);
+    x.fillStyle = "#1d2430"; x.font = "bold 104px " + FF; x.fillText(pct + "%", cx, cy - 12);
+    x.fillStyle = GCOL[g]; x.font = "bold 46px " + FF; x.fillText("GRADE " + g, cx, cy + 52);
+    return c.toDataURL("image/png");
   }
   function planView() {
     var em = battlePlan(), parts = em.body.split("\n\n");
     var st = S.planSent ? '<div class="hint" style="color:var(--green)">✔ Sent to ' + MAIL_TO + '</div>' : "";
     return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button><div class="ttl"><small>To ' + esc(MAIL_TO) + '</small><b>Battle plan</b></div></div>' +
       '<div class="row2" style="margin:0"><button class="focusable b go" data-k="plansend"' + (SYNC ? '' : ' disabled') + '>' + (S.planSending ? 'Sending…' : S.planSent ? '✔ Sent · send again' : '📧 Email it to work') + '</button></div>' + st +
-      '<div class="scroll">' + parts.map(function (p) { return '<div class="hline focusable" tabindex="0" style="white-space:pre-wrap">' + esc(p) + '</div>'; }).join("") + '</div>';
+      '<div class="scroll"><div class="hline focusable" tabindex="0" style="text-align:center;background:#fff;border-radius:0.5rem"><img src="' + scoreImage(em.pct, em.grade) + '" alt="" style="width:100%;max-width:20rem"></div>' +
+      parts.map(function (p) { return '<div class="hline focusable" tabindex="0" style="white-space:pre-wrap">' + esc(p) + '</div>'; }).join("") + '</div>';
   }
   function sendPlan() {
     if (!SYNC || S.planSending) return;
     var em = battlePlan(); S.planSending = true; S.focus = "plansend"; render();
-    fetch(SYNC + (SYNC.indexOf("?") >= 0 ? "&" : "?") + "action=mail", { method: "POST", body: JSON.stringify(em) })
+    var img = ""; try { img = scoreImage(em.pct, em.grade).split(",")[1] || ""; } catch (e) {}
+    fetch(SYNC + (SYNC.indexOf("?") >= 0 ? "&" : "?") + "action=mail", { method: "POST", body: JSON.stringify({ subject: em.subject, body: em.body, html: em.html, img: img }) })
       .then(function (r) { return r.json(); })
       .then(function (d) {
         S.planSending = false;
