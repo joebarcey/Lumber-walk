@@ -859,6 +859,103 @@ body.light .top .ttl b, body.light .top .ttl small { white-space: nowrap; }
     ORDER.forEach(function (id) { var v = S.st[id]; if (v === "n") no.push(id); else if (v !== "y") un.push(id); });
     return no.concat(un);
   }
+  /* ---------- Battle plan email: today's misses by impact, repeat problems, and a team huddle to forward ---------- */
+  var CI_TIPS = [
+    "Fix it when you see it: if it takes under 2 minutes, do it now instead of walking past it.",
+    "Own your zone: everyone walks their area at the start, middle and end of the shift.",
+    "Recover as you go: face, fill and clean before moving on to the next task.",
+    "Ask why on repeat misses: when the same standard slips day after day, fix the process, not just the shelf.",
+    "Leave it better than you found it: hand off a clean, full zone at shift change.",
+    "Speak up early: call out low bunks, damage or safety issues the moment you see them.",
+    "Use slow minutes well: 10 quiet minutes is one quick zone recovery.",
+    "Celebrate wins: call out a teammate who kept a standard at 100% this week.",
+    "Safety every time: clear aisles, proper stacking, no shortcuts on a lift.",
+    "Know what done looks like: if you're unsure of a standard, ask and we'll walk it together.",
+    "1% better a day: small daily fixes add up to a department people notice.",
+    "Walk it like a contractor: look at your area the way a Pro customer sees it walking in."
+  ];
+  function battlePlan() {
+    var t = totals(), g = grade(pc(t.met, TOTAL));
+    var cut = isoOf(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)), past = [];
+    savedKeys("plw-g:").forEach(function (d) { if (d >= cut && d < S.date) { var w = walkOf(d); if (w.walked) past.push(w); } });
+    var missCount = {}; past.forEach(function (w) { w.notList.forEach(function (id) { missCount[id] = (missCount[id] || 0) + 1; }); });
+    var walks = past.length + 1;
+    var no = ORDER.filter(function (id) { return S.st[id] === "n"; });
+    var areas = SECTIONS.map(function (sec, zi) {
+      var ids = sec.ids.filter(function (id) { return S.st[id] === "n"; });
+      var met = sec.ids.filter(function (id) { return S.st[id] === "y"; }).length;
+      return { sec: sec, ids: ids, met: met, all: sec.ids.length, lost: ids.length * 100 / TOTAL };
+    });
+    var hit = areas.filter(function (a) { return a.ids.length; }).sort(function (a, b) { return b.lost - a.lost || a.sec.name.localeCompare(b.sec.name); });
+    var wins = areas.filter(function (a) { return a.all && a.met === a.all; }).map(function (a) { return a.sec.name; });
+    var notes = (HUB.notes || []).filter(function (n) { return !n.del && String(n.text || "").indexOf("Lumber walk " + fmtDay() + " · ") === 0; });
+    function noteFor(id) {
+      var pre = "Lumber walk " + fmtDay() + " · " + SECTIONS[ITEM[id].zi].name + ": " + ITEM[id].text;
+      var n = notes.find(function (x) { return x.text.indexOf(pre) === 0; });
+      return n ? n.text.slice(pre.length).replace(/^[\s:·-]+/, "").trim() : "";
+    }
+    var repeats = Object.keys(missCount).concat(no).filter(function (id, i, a) { return a.indexOf(id) === i; })
+      .map(function (id) { return { id: id, n: (missCount[id] || 0) + (S.st[id] === "n" ? 1 : 0) }; })
+      .filter(function (r) { return r.n >= 2; }).sort(function (a, b) { return b.n - a.n; });
+    var L = [];
+    L.push("PRO & LUMBER BATTLE PLAN · " + S.label);
+    L.push("Walk: " + pc(t.met, TOTAL) + "% (" + g + ") · " + t.met + " met · " + t.no + " not met" + (t.left ? " · " + t.left + " not checked" : ""));
+    L.push("");
+    L.push("TODAY'S MISSES BY IMPACT");
+    if (!hit.length) L.push("None. Every standard checked today was met.");
+    hit.forEach(function (a) {
+      L.push(a.sec.name + "  (−" + fmtPts(a.lost) + " pts, " + a.met + "/" + a.all + " met)");
+      a.ids.forEach(function (id) {
+        var n = (missCount[id] || 0) + 1, nt = noteFor(id);
+        L.push("  • " + ITEM[id].text + (n >= 2 ? "  [missed " + n + " of last " + walks + " walks]" : ""));
+        if (nt) L.push("      Note: " + nt);
+      });
+    });
+    L.push("");
+    L.push("REPEAT PROBLEMS · LAST 7 DAYS");
+    if (!repeats.length) L.push(past.length ? "No standard missed more than once. Nice." : "Not enough walks yet to spot patterns.");
+    repeats.slice(0, 8).forEach(function (r) { L.push("  • " + SECTIONS[ITEM[r.id].zi].name + ": " + ITEM[r.id].text + "  (missed " + r.n + " of " + walks + " walks)"); });
+    L.push("");
+    L.push("———— TEAM HUDDLE · forward this part ————");
+    L.push("Team,");
+    L.push(wins.length ? "Thank you. These areas were 100% today: " + wins.join(", ") + "." : "Thanks for the work today. Here's where we stand.");
+    L.push("");
+    L.push("Where we focus:");
+    var focus = repeats.filter(function (r) { return S.st[r.id] === "n"; }).map(function (r) { return r.id; });
+    hit.forEach(function (a) { a.ids.forEach(function (id) { if (focus.indexOf(id) < 0) focus.push(id); }); });
+    if (!focus.length) L.push("  Keep it where it is. Same standards, same effort.");
+    focus.slice(0, 3).forEach(function (id, i) { L.push("  " + (i + 1) + ". " + SECTIONS[ITEM[id].zi].name + ": " + ITEM[id].text); });
+    L.push("");
+    L.push("How we keep getting better:");
+    var day = Math.floor((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - new Date(now.getFullYear(), 0, 0)) / 864e5);
+    var tips = [];
+    if (repeats.length) tips.push(CI_TIPS[3]);
+    for (var i = 0; tips.length < 3; i++) { var tp = CI_TIPS[(day * 3 + i) % CI_TIPS.length]; if (tips.indexOf(tp) < 0) tips.push(tp); }
+    tips.forEach(function (tp) { L.push("  • " + tp); });
+    L.push("");
+    L.push("Let's go get it.");
+    return { subject: "Battle Plan · Pro & Lumber · " + S.label + " · Walk " + pc(t.met, TOTAL) + "% (" + g + ")", body: L.join("\n") };
+  }
+  function planView() {
+    var em = battlePlan(), parts = em.body.split("\n\n");
+    var st = S.planSent ? '<div class="hint" style="color:var(--green)">✔ Sent to ' + MAIL_TO + '</div>' : "";
+    return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button><div class="ttl"><small>To ' + esc(MAIL_TO) + '</small><b>Battle plan</b></div></div>' +
+      '<div class="row2" style="margin:0"><button class="focusable b go" data-k="plansend"' + (SYNC ? '' : ' disabled') + '>' + (S.planSending ? 'Sending…' : S.planSent ? '✔ Sent · send again' : '📧 Email it to work') + '</button></div>' + st +
+      '<div class="scroll">' + parts.map(function (p) { return '<div class="hline focusable" tabindex="0" style="white-space:pre-wrap">' + esc(p) + '</div>'; }).join("") + '</div>';
+  }
+  function sendPlan() {
+    if (!SYNC || S.planSending) return;
+    var em = battlePlan(); S.planSending = true; S.focus = "plansend"; render();
+    fetch(SYNC + (SYNC.indexOf("?") >= 0 ? "&" : "?") + "action=mail", { method: "POST", body: JSON.stringify(em) })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        S.planSending = false;
+        if (d && d.ok) { S.planSent = true; S.toast = "Battle plan emailed"; }
+        else S.toast = /permission|authoriz|scope/i.test(String(d && d.error)) ? "Email isn't switched on yet. Ask Claude for the setup steps." : "Couldn't send: " + String((d && d.error) || "unknown").slice(0, 80);
+        if (S.view === "plan") { S.focus = "plansend"; render(); }
+      })
+      .catch(function () { S.planSending = false; S.toast = "No connection. Try again in a minute."; if (S.view === "plan") { S.focus = "plansend"; render(); } });
+  }
   function summary() {
     var t = totals(), list = sumList();
     var rows = list.map(function (id) {
@@ -868,7 +965,7 @@ body.light .top .ttl b, body.light .top .ttl small { white-space: nowrap; }
     }).join("");
     return '<div class="top"><button class="focusable b back" data-k="back">‹ Back</button>' +
       '<div class="stats"><span class="g">' + t.met + ' met</span><span class="a">' + t.no + ' not</span><span class="d">' + t.left + ' left</span></div>' +
-      '<span style="flex:1"></span><button class="focusable b side nt" data-k="send"' + (t.no ? '' : ' disabled') + '>📝 Send</button></div>' +
+      '<span style="flex:1"></span><button class="focusable b side nt" data-k="plan"' + (t.met + t.no ? '' : ' disabled') + '>📧 Plan</button><button class="focusable b side nt" data-k="send"' + (t.no ? '' : ' disabled') + '>📝 Send</button></div>' +
       (list.length ? '<div class="scroll">' + rows +
         '<button class="focusable b wide' + (S.confirm ? " sure" : "") + '" data-k="reset">' + (S.confirm ? "Sure? This clears today's walk" : "Reset today's walk") + '</button></div>'
         : '<div class="empty win">All ' + TOTAL + ' standards met.<br>Go get a coffee.</div><button class="focusable b wide' + (S.confirm ? " sure" : "") + '" data-k="reset">' + (S.confirm ? "Sure?" : "Reset today's walk") + '</button>');
@@ -980,7 +1077,7 @@ body.light .top .ttl b, body.light .top .ttl small { white-space: nowrap; }
     app.innerHTML = v === "hist" ? histView() : v === "hobs" ? histObsView() : v === "hday" ? histDayView() : v === "hweek" ? histWeekView() :
       v === "hub" ? hubView() : v === "list" ? listView() : v === "obsdone" ? obsDoneView() :
       v === "home" ? home() : v === "zone" ? zoneView() : v === "sum" ? summary() :
-      v === "notes" ? notesView() : v === "note" ? noteView() : writeView();
+      v === "notes" ? notesView() : v === "note" ? noteView() : v === "plan" ? planView() : writeView();
     applyBg(); addBgButton();
     if (S.toast) { var t = document.createElement("div"); t.className = "toast"; t.textContent = S.toast; app.appendChild(t); S.toast = ""; setTimeout(function () { t.remove(); }, 2600); }
     var want = S.focus, el = null;
@@ -988,7 +1085,7 @@ body.light .top .ttl b, body.light .top .ttl small { white-space: nowrap; }
     if (want) el = app.querySelector('[data-k="' + want + '"]:not(:disabled)');
     if (!el) {
       var firstOpenTask = (TASKS[S.list].find(function (tk) { return !isDone(S.list, tk); }) || TASKS[S.list][0] || {}).id;
-      var def = { hobs: IS_PHONE ? "mail" : "back", write: S.w && S.w.mode === "obs" ? "oname" : "say", hist: S.htab === "weeks" ? "hweeks" : S.htab === "obs" ? "hobs" : "hdays", hday: "back", hweek: "back", hub: "walk", list: "tc:" + firstOpenTask, obsdone: "mail", home: "cont", zone: "y:" + SECTIONS[S.zone].ids[firstOpen(SECTIONS[S.zone])], sum: "back", notes: IS_PHONE ? "back" : "say", note: "back" }[S.view];
+      var def = { hobs: IS_PHONE ? "mail" : "back", write: S.w && S.w.mode === "obs" ? "oname" : "say", hist: S.htab === "weeks" ? "hweeks" : S.htab === "obs" ? "hobs" : "hdays", hday: "back", hweek: "back", plan: "plansend", hub: "walk", list: "tc:" + firstOpenTask, obsdone: "mail", home: "cont", zone: "y:" + SECTIONS[S.zone].ids[firstOpen(SECTIONS[S.zone])], sum: "back", notes: IS_PHONE ? "back" : "say", note: "back" }[S.view];
       el = app.querySelector('[data-k="' + def + '"]:not(:disabled)') || app.querySelector(".focusable:not(:disabled)");
       if (S.view === "sum") { var r = app.querySelector(".item"); if (r) el = r; }
     }
@@ -1087,6 +1184,7 @@ body.light .top .ttl b, body.light .top .ttl small { white-space: nowrap; }
     S.confirm = false; bgMenu = false;
     if (S.view === "zone") { if (S.origin === "sum") { S.view = "sum"; } else { S.view = "home"; S.focus = "z:" + S.zone; } }
     else if (S.view === "sum") { S.view = "home"; S.focus = "sum"; }
+    else if (S.view === "plan") { S.view = "sum"; S.focus = "plan"; }
     else if (S.view === "home") { S.view = "hub"; S.focus = "walk"; }
     else if (S.view === "hist") { S.view = "hub"; S.focus = "hist"; }
     else if (S.view === "hobs") { S.view = S.oback || "hist"; S.focus = "ho:" + S.oid; S.keepScroll = S.oscroll; }
@@ -1203,6 +1301,8 @@ body.light .top .ttl b, body.light .top .ttl small { white-space: nowrap; }
       S.w = { mode: "new", title: "Note on " + tz.name, ctx: ITEM[tid].text, prefix: "Lumber walk " + fmtDay() + " · " + tz.name + ": " + ITEM[tid].text, back: "zone", focus: k, scroll: sc ? sc.scrollTop : null };
       S.view = "write"; render(); return;
     }
+    if (k === "plan") { S.view = "plan"; S.planSent = false; render(); return; }
+    if (k === "plansend") { sendPlan(); return; }
     if (k === "send") {
       var no = ORDER.filter(function (x) { return S.st[x] === "n"; });
       if (!no.length) return;
